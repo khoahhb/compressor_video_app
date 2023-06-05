@@ -4,23 +4,21 @@ import android.net.Uri;
 
 public class InputVideo {
 
-    Uri mUri;
+    private Uri mUri;
+    private long mStartTime = -1;
+    private long mEndTime = -1;
+    private int mVideoDuration;
 
-    long mStartTime = -1;
-    long mEndTime = -1;
-
-    int mVideoDuration;
-
-    public InputVideo(Uri uri ) {
+    public InputVideo(Uri uri) {
         mUri = uri;
-        mVideoDuration = MediaHelper.GetDuration( uri );
+        mVideoDuration = MediaHelper.GetDuration(uri);
     }
 
-    public void setStartTime( long startTime ) {
+    public void setStartTime(long startTime) {
         mStartTime = startTime;
     }
 
-    public void setEndTime( int endTime ) {
+    public void setEndTime(int endTime) {
         mEndTime = endTime;
     }
 
@@ -39,4 +37,5 @@ public class InputVideo {
     public int getVideoDuration() {
         return mVideoDuration;
     }
+
 }

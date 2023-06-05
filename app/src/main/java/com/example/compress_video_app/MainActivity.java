@@ -24,32 +24,20 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
+
     private static final int REQUEST_PERMISSION_CODE = 1;
     private static final String TAG = "MainActivity";
     private Button btnUpVideo;
     private VideoView vvOriginal, vvCompressed;
     private VideoCompressor videoCompressor;
     private Uri videoUri;
-
-    private final ActivityResultLauncher<Intent> selectVideo = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK) {
-                    if (result.getData() != null) {
-                        videoUri = result.getData().getData();
-                        try {
-                            vvOriginal.setVideoURI(videoUri);
-                            vvOriginal.start();
-                            compressVideo(getRealPathFromURI(this, videoUri));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-    );
+    private File dir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,21 +62,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case REQUEST_PERMISSION_CODE:
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0 &&
-                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    uploadVideo();
-                }
-        }
-    }
-
     public void initUI() {
+
+        dir = new File(this.getFilesDir(), "temp_videos");
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+
         btnUpVideo = findViewById(R.id.btnUpVideo);
         vvOriginal = findViewById(R.id.vvOriginal);
         vvCompressed = findViewById(R.id.vvCompressed);
@@ -101,34 +81,81 @@ public class MainActivity extends AppCompatActivity {
         videoCompressor = new VideoCompressor();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case REQUEST_PERMISSION_CODE:
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    uploadVideo();
+                }
+        }
+    }
+
     public void uploadVideo() {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("video/*");
         selectVideo.launch(intent);
     }
 
+    private final ActivityResultLauncher<Intent> selectVideo = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    if (result.getData() != null) {
+                        videoUri = result.getData().getData();
+                        try {
+                            vvOriginal.setVideoURI(videoUri);
+                            vvOriginal.start();
+                            compressVideo(getRealPathFromURI(this, videoUri));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+    );
+
     private void compressVideo(String inputPath) throws IOException {
 
-        File dir = new File(this.getFilesDir(), "temp_videos");
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
+        File inputFile = new File(inputPath);
         File outputFile = new File(dir, "output.mp4");
         if (!outputFile.exists()) {
             outputFile.createNewFile();
         }
 
-        File inputFile = new File(inputPath);
-
         try {
-            vvCompressed.setVideoURI(Uri.fromFile(outputFile));
-            vvCompressed.start();
-
-        } catch (Exception e) {
-            Log.e("VideoView", "Error occurred while setting video URI: " + e.getMessage());
+            VideoCompressor compressor = new VideoCompressor();
+            compressor.setInput(new InputVideo(Uri.fromFile(inputFile)));
+            compressor.setOutput(Uri.fromFile(outputFile));
+            compressor.setOutputResolution(1280, 720);
+            compressor.start();
+        } catch (Throwable e) {
+            Log.e(TAG, "Problem: " + e);
             e.printStackTrace();
         }
 
+//        try {
+//            vvCompressed.setVideoURI(Uri.fromFile(outputFile));
+//            vvCompressed.start();
+//
+//        } catch (Exception e) {
+//            Log.e("VideoView", "Error occurred while setting video URI: " + e.getMessage());
+//            e.printStackTrace();
+//        }
+
+
+
+
+
+
+
+
+
+//        File inputFile = new File(inputPath);
+//        File outputFile = new File(dir, createOutputName(inputPath));
+//        outputFile.createNewFile();
 //        try {
 //            VideoCompressor compressor = new VideoCompressor();
 //            compressor.setInput(new InputVideo(Uri.fromFile(inputFile)));
@@ -139,19 +166,14 @@ public class MainActivity extends AppCompatActivity {
 //            Log.e(TAG, "Problem: " + e);
 //            e.printStackTrace();
 //        }
+    }
 
-//        try {
-//            VideoCompressor compressor = new VideoCompressor();
-//            compressor.addSamplerClip(new SamplerClip(Uri.fromFile(inputFile)));
-//            compressor.setOutput(Uri.fromFile(outputFile));
-//            compressor.setOutputResolution(1280, 720);
-//            compressor.start();
-//        } catch (Throwable e) {
-//            Log.e(TAG, "Problem: " + e);
-//            e.printStackTrace();
-//        }
+    public String createOutputName(String inputPath) {
+        String inputName = inputPath.substring(inputPath.lastIndexOf('/') + 1, inputPath.lastIndexOf('.'));
 
+        String outputName = inputName + "_" + (new Date()).getTime() + ".mp4";
 
+        return outputName;
     }
 
     public String getRealPathFromURI(Context context, Uri contentUri) {
@@ -169,20 +191,3 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
-
-//            MediaScannerConnection.scanFile(this, new String[]{videoFile.getAbsolutePath()}, null,
-//                    (path, uri1) ->
-//                    {
-//                    runOnUiThread(() -> {
-//                    try {
-//                    vvCompressed.setVideoURI(uri1);
-//                    vvCompressed.start();
-//
-//                    } catch (Exception e) {
-//                    Log.e("VideoView", "Error occurred while setting video URI: " + e.getMessage());
-//                    e.printStackTrace();
-//                    }
-//
-//                    });
-//                    }
-//                    );
