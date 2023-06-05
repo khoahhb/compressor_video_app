@@ -78,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
         MediaController mediaController2 = new MediaController(this);
         vvCompressed.setMediaController(mediaController2);
         mediaController2.setAnchorView(vvCompressed);
-        videoCompressor = new VideoCompressor();
     }
 
     @Override
@@ -126,7 +125,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         try {
-            VideoCompressor compressor = new VideoCompressor();
+            VideoCompressor compressor = new VideoCompressor(new VideoCompressor.VideoCompressorListener() {
+                @Override
+                public void onSuccess() {
+                    vvCompressed.setVideoURI(Uri.fromFile(outputFile));
+                    vvCompressed.start();
+                }
+            });
             compressor.setInput(new InputVideo(Uri.fromFile(inputFile)));
             compressor.setOutput(Uri.fromFile(outputFile));
             compressor.setOutputResolution(1280, 720);
@@ -136,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+
 //        try {
 //            vvCompressed.setVideoURI(Uri.fromFile(outputFile));
 //            vvCompressed.start();
@@ -144,13 +150,6 @@ public class MainActivity extends AppCompatActivity {
 //            Log.e("VideoView", "Error occurred while setting video URI: " + e.getMessage());
 //            e.printStackTrace();
 //        }
-
-
-
-
-
-
-
 
 
 //        File inputFile = new File(inputPath);

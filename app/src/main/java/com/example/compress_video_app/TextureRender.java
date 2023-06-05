@@ -10,9 +10,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-/**
- * Code for rendering a texture onto a surface using OpenGL ES 2.0.
- */
 class TextureRender {
     private static final String TAG = "TextureRender";
     private static final int FLOAT_SIZE_BYTES = 4;
@@ -72,9 +69,6 @@ class TextureRender {
         GLES20.glFinish();
     }
 
-    /**
-     * Initializes GL state. Call this after the EGL surface has been created and made current.
-     */
     public void surfaceCreated() {
         mProgram = createProgram( VERTEX_SHADER, FRAGMENT_SHADER );
         if ( mProgram == 0 ) {
@@ -112,9 +106,6 @@ class TextureRender {
         checkGlError( "glTexParameter" );
     }
 
-    /**
-     * Replaces the fragment shader.
-     */
     public void changeFragmentShader( String fragmentShader ) {
         GLES20.glDeleteProgram( mProgram );
         mProgram = createProgram( VERTEX_SHADER, fragmentShader );

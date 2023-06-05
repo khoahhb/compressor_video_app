@@ -8,6 +8,8 @@ import android.media.MediaMuxer;
 import android.net.Uri;
 import android.util.Log;
 
+import androidx.cardview.widget.CardView;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -55,8 +57,9 @@ public class VideoCompressor  {
     private MediaCodec mVideoEncoder = null;
     private MediaCodec mAudioEncoder = null;
     private MediaMuxer mMuxer = null;
-    private int mTrackIndexVideo = -1;
+    private int mTrackIndex = -1;
     private int mTrackIndexAudio = -1;
+    private boolean mMuxerStarted = false;
     private long mLastSampleTime = 0;
     private long mEncoderPresentationTimeUs = 0;
     private MediaExtractor audioExtractor = null;
@@ -243,11 +246,6 @@ public class VideoCompressor  {
                 decoder.release();
             }
 
-            if (mVideoEncoder != null) {
-                mVideoEncoder.stop();
-                mVideoEncoder.release();
-            }
-
             if (extractor != null) {
                 extractor.release();
                 extractor = null;
@@ -257,14 +255,15 @@ public class VideoCompressor  {
 
     private void compressVideo(MediaExtractor extractor, MediaCodec decoder, InputVideo clip) {
 
-        ByteBuffer[] audioInputBuffers = mAudioEncoder.getInputBuffers();
-        ByteBuffer[] audioOutputBuffers = mAudioEncoder.getOutputBuffers();
-
         ByteBuffer[] decoderInputBuffers = decoder.getInputBuffers();
         ByteBuffer[] encoderOutputBuffers = mVideoEncoder.getOutputBuffers();
 
-        MediaCodec.BufferInfo audioInfo = new MediaCodec.BufferInfo();
-        MediaCodec.BufferInfo videoInfo = new MediaCodec.BufferInfo();
+        ByteBuffer[] audioInputBuffers = mAudioEncoder.getInputBuffers();
+        ByteBuffer[] audioOutputBuffers = mAudioEncoder.getOutputBuffers();
+
+        MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
+        MediaCodec.BufferInfo audioBufferInfo = new MediaCodec.BufferInfo();
+
 
         int inputChunk = 0;
         int outputCount = 0;
@@ -275,39 +274,44 @@ public class VideoCompressor  {
         }
 
         boolean outputDoneNextTimeWeCheck = false;
+        boolean audioInputDone = false;
         boolean outputDone = false;
         boolean inputDone = false;
         boolean decoderDone = false;
 
         while (!outputDone) {
-            if (!inputDone) {
-                int inputBufIndex = decoder.dequeueInputBuffer(TIMEOUT_USEC);
-                if (inputBufIndex >= 0) {
-                    if (extractor.getSampleTime() / 1000 >= endTime) {
-                        decoder.queueInputBuffer(inputBufIndex, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
-                        if (VERBOSE)
-                            Log.d(TAG, "sent input EOS (with zero-length frame)");
-                    } else {
-                        ByteBuffer inputBuf = decoderInputBuffers[inputBufIndex];
-                        inputBuf.clear();
+//            if (!inputDone) {
+//                int inputBufIndex = decoder.dequeueInputBuffer(TIMEOUT_USEC);
+//                if (inputBufIndex >= 0) {
+//                    if (extractor.getSampleTime() / 1000 >= endTime) {
+//                        decoder.queueInputBuffer(inputBufIndex, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+//                        inputDone = true;
+//                        if (VERBOSE)
+//                            Log.d(TAG, "sent input EOS (with zero-length frame)");
+//                    } else {
+//                        ByteBuffer inputBuf = decoderInputBuffers[inputBufIndex];
+//                        inputBuf.clear();
+//
+//                        int sampleSize = extractor.readSampleData(inputBuf, 0);
+//                        if (sampleSize < 0) {
+//                            Log.d(TAG, "InputBuffer BUFFER_FLAG_END_OF_STREAM");
+//                            decoder.queueInputBuffer(inputBufIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+//                        } else {
+//                            Log.d(TAG, "InputBuffer ADVANCING");
+//                            decoder.queueInputBuffer(inputBufIndex, 0, sampleSize, extractor.getSampleTime(), 0);
+//                            extractor.advance();
+//                        }
+//                        inputChunk++;
+//                    }
+//                }
+//            }
 
-                        int sampleSize = extractor.readSampleData(inputBuf, 0);
-                        if (sampleSize < 0) {
-                            Log.d(TAG, "InputBuffer BUFFER_FLAG_END_OF_STREAM");
-                            decoder.queueInputBuffer(inputBufIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
-                        } else {
-                            Log.d(TAG, "InputBuffer ADVANCING");
-                            decoder.queueInputBuffer(inputBufIndex, 0, sampleSize, extractor.getSampleTime(), 0);
-                            extractor.advance();
-                        }
-                        inputChunk++;
-                    }
-                }
+            if (!audioInputDone) {
                 int inputAudioBufIndex = mAudioEncoder.dequeueInputBuffer(TIMEOUT_USEC);
                 if (inputAudioBufIndex >= 0) {
                     if (audioExtractor.getSampleTime() / 1000 >= endTime) {
                         mAudioEncoder.queueInputBuffer(inputAudioBufIndex, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
-                        inputDone = true;
+                        audioInputDone = true;
                     } else {
                         ByteBuffer inputBuf = audioInputBuffers[inputAudioBufIndex];
                         inputBuf.clear();
@@ -321,122 +325,150 @@ public class VideoCompressor  {
                         }
                     }
                 }
-
             }
-
-            // Assume output is available.
-            boolean decoderOutputAvailable = !decoderDone;
-            boolean encoderOutputAvailable = true;
-            while (decoderOutputAvailable || encoderOutputAvailable) {
-                int encoderStatus = mVideoEncoder.dequeueOutputBuffer(videoInfo, TIMEOUT_USEC);
+            boolean encoderAudioOutputAvailable = true;
+            while (encoderAudioOutputAvailable) {
+                int encoderStatus = mAudioEncoder.dequeueOutputBuffer(info, TIMEOUT_USEC);
                 if (encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
-                    if (VERBOSE)
-                        Log.d(TAG, "no output from encoder available");
-                    encoderOutputAvailable = false;
+                    encoderAudioOutputAvailable = false;
+                    outputDone = true;
                 } else if (encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
-                    encoderOutputBuffers = mVideoEncoder.getOutputBuffers();
-                    if (VERBOSE)
-                        Log.d(TAG, "encoder output buffers changed");
+                    audioOutputBuffers = mAudioEncoder.getOutputBuffers();
                 } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                    Log.d(TAG, "output buffers changed");
+                    MediaFormat newFormat = mAudioEncoder.getOutputFormat();
 
-                    MediaFormat newFormat = mVideoEncoder.getOutputFormat();
-
-                    mTrackIndexVideo = mMuxer.addTrack(newFormat);
+                    mTrackIndexAudio = mMuxer.addTrack(newFormat);
                     mMuxer.start();
-                    if (VERBOSE)
-                        Log.d(TAG, "encoder output format changed: " + newFormat);
+
                 } else if (encoderStatus < 0) {
                 } else {
 
-                    // encoderStatus >= 0
-                    ByteBuffer encodedData = encoderOutputBuffers[encoderStatus];
+                    ByteBuffer encodedData = audioOutputBuffers[encoderStatus];
 
                     if (encodedData == null) {}
 
-                    // Write the data to the output
-                    if (videoInfo.size != 0) {
-
-                        encodedData.position(videoInfo.offset);
-                        encodedData.limit(videoInfo.offset + videoInfo.size);
-                        outputCount++;
-
-                        mMuxer.writeSampleData(mTrackIndexVideo, encodedData, videoInfo);
-
-                        if (VERBOSE)
-                            Log.d(TAG, "encoder output " + videoInfo.size + " bytes");
+                    if (info.size != 0) {
+                        encodedData.position(info.offset);
+                        encodedData.limit(info.offset + info.size);
+                        mMuxer.writeSampleData(mTrackIndexAudio, encodedData, info);
                     }
-
-                    outputDone = (videoInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0;
-
-                    mVideoEncoder.releaseOutputBuffer(encoderStatus, false);
-                }
-
-                if (outputDoneNextTimeWeCheck) {
-                    outputDone = true;
-                }
-
-                if (encoderStatus != MediaCodec.INFO_TRY_AGAIN_LATER) {
-                    continue;
-                }
-
-                if (!decoderDone) {
-                    int decoderStatus = decoder.dequeueOutputBuffer(videoInfo, TIMEOUT_USEC);
-                    if (decoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
-                        if (VERBOSE)
-                            Log.d(TAG, "no output from decoder available");
-                        decoderOutputAvailable = false;
-                    } else if (decoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
-                        // decoderOutputBuffers = decoder.getOutputBuffers();
-                        if (VERBOSE)
-                            Log.d(TAG, "decoder output buffers changed (we don't care)");
-                    } else if (decoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                        MediaFormat newFormat = decoder.getOutputFormat();
-                        if (VERBOSE)
-                            Log.d(TAG, "decoder output format changed: " + newFormat);
-                    } else if (decoderStatus < 0) {
-                    } else {
-
-                        // decoderStatus >= 0
-                        if (VERBOSE)
-                            Log.d(TAG, "surface decoder given buffer " + decoderStatus + " (size=" + videoInfo.size + ")");
-
-                        boolean doRender = (videoInfo.size != 0);
-
-                        decoder.releaseOutputBuffer(decoderStatus, doRender);
-
-                        if (doRender) {
-                            if (VERBOSE)
-                                Log.d(TAG, "awaiting frame");
-                            mOutputSurface.awaitNewImage();
-                            mOutputSurface.drawImage();
-
-                            long nSecs = videoInfo.presentationTimeUs * 1000;
-
-                            if (clip.getStartTime() != -1) {
-                                nSecs = (videoInfo.presentationTimeUs - (clip.getStartTime() * 1000)) * 1000;
-                            }
-
-                            Log.d("this", "Setting presentation time " + nSecs / (1000 * 1000));
-
-                            nSecs = Math.max(0, nSecs);
-
-                            mEncoderPresentationTimeUs += (nSecs - mLastSampleTime);
-
-                            mLastSampleTime = nSecs;
-
-                            mInputSurface.setPresentationTime(mEncoderPresentationTimeUs);
-
-                            if (VERBOSE)
-                                Log.d(TAG, "swapBuffers");
-
-                            mInputSurface.swapBuffers();
-                        }
-                        if ((videoInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                            outputDoneNextTimeWeCheck = true;
-                        }
-                    }
+                    mAudioEncoder.releaseOutputBuffer(encoderStatus, false);
                 }
             }
+            //// Assume output is available.
+//            boolean decoderOutputAvailable = !decoderDone;
+//            boolean encoderOutputAvailable = true;
+//            while (decoderOutputAvailable || encoderOutputAvailable) {
+//                int encoderStatus = mVideoEncoder.dequeueOutputBuffer(info, TIMEOUT_USEC);
+//                if (encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
+//                    if (VERBOSE)
+//                        Log.d(TAG, "no output from encoder available");
+//                    encoderOutputAvailable = false;
+//                } else if (encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
+//                    encoderOutputBuffers = mVideoEncoder.getOutputBuffers();
+//                    if (VERBOSE)
+//                        Log.d(TAG, "encoder output buffers changed");
+//                } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+//
+//                    MediaFormat newFormat = mVideoEncoder.getOutputFormat();
+//
+//                    mTrackIndex = mMuxer.addTrack(newFormat);
+//                    mMuxer.start();
+//                    if (VERBOSE)
+//                        Log.d(TAG, "encoder output format changed: " + newFormat);
+//                } else if (encoderStatus < 0) {
+//                } else {
+//
+//                    // encoderStatus >= 0
+//                    ByteBuffer encodedData = encoderOutputBuffers[encoderStatus];
+//
+//                    if (encodedData == null) {}
+//
+//                    // Write the data to the output
+//                    if (info.size != 0) {
+//
+//                        encodedData.position(info.offset);
+//                        encodedData.limit(info.offset + info.size);
+//                        outputCount++;
+//
+//                        mMuxer.writeSampleData(mTrackIndex, encodedData, info);
+//
+//                        if (VERBOSE)
+//                            Log.d(TAG, "encoder output " + info.size + " bytes");
+//                    }
+//
+//                    outputDone = (info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0;
+//
+//                    mVideoEncoder.releaseOutputBuffer(encoderStatus, false);
+//                }
+//
+//                if (outputDoneNextTimeWeCheck) {
+//                    outputDone = true;
+//                }
+//
+//                if (encoderStatus != MediaCodec.INFO_TRY_AGAIN_LATER) {
+//                    continue;
+//                }
+//
+//                if (!decoderDone) {
+//                    int decoderStatus = decoder.dequeueOutputBuffer(info, TIMEOUT_USEC);
+//                    if (decoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
+//                        if (VERBOSE)
+//                            Log.d(TAG, "no output from decoder available");
+//                        decoderOutputAvailable = false;
+//                    } else if (decoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
+//                        // decoderOutputBuffers = decoder.getOutputBuffers();
+//                        if (VERBOSE)
+//                            Log.d(TAG, "decoder output buffers changed (we don't care)");
+//                    } else if (decoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+//                        MediaFormat newFormat = decoder.getOutputFormat();
+//                        if (VERBOSE)
+//                            Log.d(TAG, "decoder output format changed: " + newFormat);
+//                    } else if (decoderStatus < 0) {
+//                    } else {
+//
+//                        // decoderStatus >= 0
+//                        if (VERBOSE)
+//                            Log.d(TAG, "surface decoder given buffer " + decoderStatus + " (size=" + info.size + ")");
+//
+//                        boolean doRender = (info.size != 0);
+//
+//                        decoder.releaseOutputBuffer(decoderStatus, doRender);
+//
+//                        if (doRender) {
+//                            if (VERBOSE)
+//                                Log.d(TAG, "awaiting frame");
+//                            mOutputSurface.awaitNewImage();
+//                            mOutputSurface.drawImage();
+//
+//                            long nSecs = info.presentationTimeUs * 1000;
+//
+//                            if (clip.getStartTime() != -1) {
+//                                nSecs = (info.presentationTimeUs - (clip.getStartTime() * 1000)) * 1000;
+//                            }
+//
+//                            Log.d("this", "Setting presentation time " + nSecs / (1000 * 1000));
+//
+//                            nSecs = Math.max(0, nSecs);
+//
+//                            mEncoderPresentationTimeUs += (nSecs - mLastSampleTime);
+//
+//                            mLastSampleTime = nSecs;
+//
+//                            mInputSurface.setPresentationTime(mEncoderPresentationTimeUs);
+//
+//                            if (VERBOSE)
+//                                Log.d(TAG, "swapBuffers");
+//
+//                            mInputSurface.swapBuffers();
+//                        }
+//                        if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+//                            outputDoneNextTimeWeCheck = true;
+//                        }
+//                    }
+//                }
+//            }
         }
         if (inputChunk != outputCount) {
             // throw new RuntimeException( "frame lost: " + inputChunk + " in, " + outputCount + " out" );
