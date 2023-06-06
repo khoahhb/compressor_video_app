@@ -5,17 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.MediaController;
-import android.widget.TextView;
 import android.widget.VideoView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -24,9 +21,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.Timestamp;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
@@ -119,22 +113,16 @@ public class MainActivity extends AppCompatActivity {
     private void compressVideo(String inputPath) throws IOException {
 
         File inputFile = new File(inputPath);
-        File outputFile = new File(dir, "output.mp4");
+        File outputFile = new File(dir, "outputTemp.mp4");
         if (!outputFile.exists()) {
             outputFile.createNewFile();
         }
 
         try {
-            VideoCompressor compressor = new VideoCompressor(new VideoCompressor.VideoCompressorListener() {
-                @Override
-                public void onSuccess() {
-                    vvCompressed.setVideoURI(Uri.fromFile(outputFile));
-                    vvCompressed.start();
-                }
-            });
-            compressor.setInput(new InputVideo(Uri.fromFile(inputFile)));
-            compressor.setOutput(Uri.fromFile(outputFile));
-            compressor.setOutputResolution(1280, 720);
+            VideoCompressor compressor = new VideoCompressor(this);
+            compressor.addVideo(new InputVideo(Uri.fromFile(inputFile)));
+            compressor.setOutput("outputReal.mp4");
+            compressor.setOutputBitRate(2000000);
             compressor.start();
         } catch (Throwable e) {
             Log.e(TAG, "Problem: " + e);
@@ -155,16 +143,6 @@ public class MainActivity extends AppCompatActivity {
 //        File inputFile = new File(inputPath);
 //        File outputFile = new File(dir, createOutputName(inputPath));
 //        outputFile.createNewFile();
-//        try {
-//            VideoCompressor compressor = new VideoCompressor();
-//            compressor.setInput(new InputVideo(Uri.fromFile(inputFile)));
-//            compressor.setOutput(Uri.fromFile(outputFile));
-//            compressor.setOutputResolution(1280, 720);
-//            compressor.start();
-//        } catch (Throwable e) {
-//            Log.e(TAG, "Problem: " + e);
-//            e.printStackTrace();
-//        }
     }
 
     public String createOutputName(String inputPath) {
