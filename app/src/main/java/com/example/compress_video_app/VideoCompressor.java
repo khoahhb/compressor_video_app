@@ -8,6 +8,7 @@ import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Looper;
 import android.util.Log;
 
@@ -49,6 +50,8 @@ public class VideoCompressor {
     private int mBitRate = BITRATE_720P;
     private int mFrameRate = FPS_30;
     private int mIFrameInterval = IFRAME_INTERVAL_10;
+    private MediaFormat inputVideoFormat;
+    private MediaFormat outputVideoFormat;
 
     List<InputVideo> mClips = new ArrayList<>();
     private final Uri mOutputTempUri;
@@ -80,7 +83,12 @@ public class VideoCompressor {
     {
         mClips.add( clip );
 
-        MediaExtractor extractor = setupExtractorForClip(clip);
+        copyInputFormatToOutputFormat();
+    }
+
+    private void copyInputFormatToOutputFormat(){
+
+        MediaExtractor extractor = setupExtractorForClip(mClips.get(0));
 
         if(extractor == null ) {
             return;
@@ -89,11 +97,43 @@ public class VideoCompressor {
         int trackIndex = getVideoTrackIndex(extractor);
         extractor.selectTrack( trackIndex );
 
-        MediaFormat clipFormat = extractor.getTrackFormat( trackIndex );
 
-        mHeight = clipFormat.getInteger(MediaFormat.KEY_HEIGHT);
-        mWidth = clipFormat.getInteger(MediaFormat.KEY_WIDTH);
+        //Get input format
+        inputVideoFormat = extractor.getTrackFormat( trackIndex );
+        Log.d( TAG, "Video input format: " + inputVideoFormat );
+        mHeight = inputVideoFormat.getInteger(MediaFormat.KEY_HEIGHT);
+        mWidth = inputVideoFormat.getInteger(MediaFormat.KEY_WIDTH);
+
+        //Create output format
+        outputVideoFormat = MediaFormat.createVideoFormat( MediaHelper.MIME_TYPE_AVC, mWidth, mHeight );
+
+//        //Copy input to output
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//            for (String key : inputVideoFormat.getKeys()) {
+//                if (inputVideoFormat.getValueTypeForKey(key) == MediaFormat.TYPE_STRING) {
+//                    String value = inputVideoFormat.getString(key);
+//                    outputVideoFormat.setString(key, value);
+//                }
+//                if (inputVideoFormat.getValueTypeForKey(key) == MediaFormat.TYPE_INTEGER) {
+//                    int value = inputVideoFormat.getInteger(key);
+//                    outputVideoFormat.setInteger(key, value);
+//                }
+//                if (inputVideoFormat.getValueTypeForKey(key) == MediaFormat.TYPE_FLOAT) {
+//                    float value = inputVideoFormat.getFloat(key);
+//                    outputVideoFormat.setFloat(key, value);
+//                }
+//                if (inputVideoFormat.getValueTypeForKey(key) == MediaFormat.TYPE_LONG) {
+//                    long value = inputVideoFormat.getLong(key);
+//                    outputVideoFormat.setLong(key, value);
+//                }
+//                if (inputVideoFormat.getValueTypeForKey(key) == MediaFormat.TYPE_BYTE_BUFFER) {
+//                    ByteBuffer value = inputVideoFormat.getByteBuffer(key);
+//                    outputVideoFormat.setByteBuffer(key, value);
+//                }
+//            }
+//        }
     }
+
 
     public void setOutput( String realName ) throws IOException {
         File outputRealFile = new File(dir, realName);
@@ -152,17 +192,16 @@ public class VideoCompressor {
 
     private void setupEncoder() {
         try {
-            MediaFormat outputFormat = MediaFormat.createVideoFormat( MediaHelper.MIME_TYPE_AVC, mWidth, mHeight );
-            outputFormat.setInteger( MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface );
-            outputFormat.setInteger( MediaFormat.KEY_BIT_RATE, mBitRate );
-            outputFormat.setInteger( MediaFormat.KEY_FRAME_RATE, mFrameRate );
-            outputFormat.setInteger( MediaFormat.KEY_I_FRAME_INTERVAL, mIFrameInterval );
-            outputFormat.setInteger( MediaFormat.KEY_MAX_WIDTH, mWidth );
-            outputFormat.setInteger( MediaFormat.KEY_MAX_HEIGHT, mHeight );
+            outputVideoFormat.setInteger( MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface );
+            outputVideoFormat.setInteger( MediaFormat.KEY_BIT_RATE, mBitRate );
+            outputVideoFormat.setInteger( MediaFormat.KEY_FRAME_RATE, mFrameRate );
+            outputVideoFormat.setInteger( MediaFormat.KEY_I_FRAME_INTERVAL, mIFrameInterval );
+            outputVideoFormat.setInteger( MediaFormat.KEY_MAX_WIDTH, mWidth );
+            outputVideoFormat.setInteger( MediaFormat.KEY_MAX_HEIGHT, mHeight );
 
             mEncoder = MediaCodec.createEncoderByType( MediaHelper.MIME_TYPE_AVC );
 
-            mEncoder.configure( outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE );
+            mEncoder.configure( outputVideoFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE );
             mInputSurface = new InputSurface( mEncoder.createInputSurface() );
             mInputSurface.makeCurrent();
             mEncoder.start();
@@ -430,6 +469,8 @@ public class VideoCompressor {
 
             MediaFormat videoFormat = videoExtractor.getTrackFormat( trackIndexVideo );
 
+            Log.d( TAG, "Video output format: " + videoFormat );
+
             //Audio Extractor
             MediaExtractor audioExtractor = setupExtractorForClip(mClips.get(0));
 
@@ -485,7 +526,6 @@ public class VideoCompressor {
                 }
             }
 
-
             boolean sawEOS2 = false;
             int frameCount2 =0;
             while (!sawEOS2)
@@ -509,88 +549,13 @@ public class VideoCompressor {
                 }
             }
 
-
             muxer.stop();
             muxer.release();
-
 
         }catch (Exception e){
             Log.e("TestMuxAudio", "Problem: " + e.toString());
         }
-
-
     }
-
-//    @SuppressLint("WrongConstant")
-//    private void muxAudioAndVideo(){
-//
-//        try {
-//
-//            //Video Extractor
-//            MediaExtractor videoExtractor = setupExtractorForClip(new InputVideo(mOutputTempUri));
-//
-//            int trackIndexVideo = getVideoTrackIndex(videoExtractor);
-//
-//            videoExtractor.selectTrack( trackIndexVideo );
-//
-//            MediaFormat videoFormat = videoExtractor.getTrackFormat( trackIndexVideo );
-//
-//            //Audio Extractor
-//            MediaExtractor audioExtractor = setupExtractorForClip(mClips.get(0));
-//
-//            int trackIndexAudio = getAudioTrackIndex(audioExtractor);
-//
-//            audioExtractor.selectTrack( trackIndexAudio );
-//
-//            MediaFormat audioFormat = audioExtractor.getTrackFormat( trackIndexAudio );
-//
-//            //Muxer
-//            MediaMuxer muxer = new MediaMuxer( mOutputRealUri.getPath(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4 );
-//            int videoIndex = muxer.addTrack(videoFormat);
-//            int audioIndex = muxer.addTrack(audioFormat);
-//            muxer.start();
-//
-//            int maxChunkSize = 1024 * 1024;
-//            ByteBuffer buffer = ByteBuffer.allocate(maxChunkSize);
-//            MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-//
-//            while (true) {
-//                int chunkSize = videoExtractor.readSampleData(buffer, 0);
-//
-//                if (chunkSize > 0) {
-//                    bufferInfo.presentationTimeUs = videoExtractor.getSampleTime();
-//                    bufferInfo.flags = videoExtractor.getSampleFlags();
-//                    bufferInfo.size = chunkSize;
-//
-//                    muxer.writeSampleData(videoIndex, buffer, bufferInfo);
-//
-//                    videoExtractor.advance();
-//
-//                } else {
-//                    break;
-//                }
-//            }
-//
-////            while (true) {
-////                int chunkSize = audioExtractor.readSampleData(buffer, 0);
-////
-////                if (chunkSize >= 0) {
-////                    bufferInfo.presentationTimeUs = audioExtractor.getSampleTime();
-////                    bufferInfo.flags = audioExtractor.getSampleFlags();
-////                    bufferInfo.size = chunkSize;
-////
-////                    muxer.writeSampleData(audioIndex, buffer, bufferInfo);
-////                    audioExtractor.advance();
-////                } else {
-////                    break;
-////                }
-////            }
-//        }catch (Exception e){
-//            Log.e("TestMuxAudio", "Problem: " + e.toString());
-//        }
-//
-//
-//    }
 
     private int getVideoTrackIndex(MediaExtractor extractor) {
         int index = -1;
