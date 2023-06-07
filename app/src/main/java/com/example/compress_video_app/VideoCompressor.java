@@ -90,7 +90,10 @@ public class VideoCompressor {
         extractor.selectTrack( trackIndex );
 
         MediaFormat clipFormat = extractor.getTrackFormat( trackIndex );
-        if(clipFormat.getInteger(MediaFormat.KEY_ROTATION) == 90 || clipFormat.getInteger(MediaFormat.KEY_ROTATION) == -90){
+
+        int rotation = clipFormat.containsKey(MediaFormat.KEY_ROTATION) ? clipFormat.getInteger(MediaFormat.KEY_ROTATION) : 0;
+
+        if(rotation == 90 ||rotation == 270){
             mHeight = clipFormat.getInteger(MediaFormat.KEY_WIDTH);
             mWidth = clipFormat.getInteger(MediaFormat.KEY_HEIGHT);
         }else{
@@ -290,7 +293,7 @@ public class VideoCompressor {
                             Log.d( TAG, "InputBuffer BUFFER_FLAG_END_OF_STREAM" );
                             decoder.queueInputBuffer( inputBufIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM );
                         } else {
-                            Log.d( TAG, "InputBuffer ADVANCING" );
+//                            Log.d( TAG, "InputBuffer ADVANCING" );
                             decoder.queueInputBuffer( inputBufIndex, 0, sampleSize, extractor.getSampleTime(), 0 );
                             extractor.advance();
                         }
