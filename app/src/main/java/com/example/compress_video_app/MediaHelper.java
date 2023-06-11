@@ -13,6 +13,7 @@ import java.io.IOException;
 public class MediaHelper {
 
     public static final String MIME_TYPE_AVC = "video/avc";
+    public static final String MIME_TYPE_HEVC = "video/hevc";
 
     public static Bitmap GetThumbnailFromVideo(Uri uri, long timeMs) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();

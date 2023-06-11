@@ -4,10 +4,12 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Looper;
 import android.util.Log;
 
@@ -64,6 +66,8 @@ public class VideoCompressor {
     long mLastSampleTime = 0;
     long mEncoderPresentationTimeUs = 0;
 
+    private MediaFormat inputFormat;
+
     public VideoCompressor(Context context) throws IOException {
         dir = new File(context.getFilesDir(), "temp_videos");
         if (!dir.exists()) {
@@ -89,16 +93,18 @@ public class VideoCompressor {
         int trackIndex = getVideoTrackIndex(extractor);
         extractor.selectTrack( trackIndex );
 
-        MediaFormat clipFormat = extractor.getTrackFormat( trackIndex );
+        inputFormat = extractor.getTrackFormat( trackIndex );
+        Log.d(TAG+"test", "addVideo: " + inputFormat);
 
-        int rotation = clipFormat.containsKey(MediaFormat.KEY_ROTATION) ? clipFormat.getInteger(MediaFormat.KEY_ROTATION) : 0;
+
+        int rotation = inputFormat.containsKey(MediaFormat.KEY_ROTATION) ? inputFormat.getInteger(MediaFormat.KEY_ROTATION) : 0;
 
         if(rotation == 90 ||rotation == 270){
-            mHeight = clipFormat.getInteger(MediaFormat.KEY_WIDTH);
-            mWidth = clipFormat.getInteger(MediaFormat.KEY_HEIGHT);
+            mHeight = inputFormat.getInteger(MediaFormat.KEY_WIDTH);
+            mWidth = inputFormat.getInteger(MediaFormat.KEY_HEIGHT);
         }else{
-            mHeight = clipFormat.getInteger(MediaFormat.KEY_HEIGHT);
-            mWidth = clipFormat.getInteger(MediaFormat.KEY_WIDTH);
+            mHeight = inputFormat.getInteger(MediaFormat.KEY_HEIGHT);
+            mWidth = inputFormat.getInteger(MediaFormat.KEY_WIDTH);
         }
     }
 
@@ -160,18 +166,23 @@ public class VideoCompressor {
     private void setupEncoder() {
         try {
             MediaFormat outputFormat = MediaFormat.createVideoFormat( MediaHelper.MIME_TYPE_AVC, mWidth, mHeight );
+
             outputFormat.setInteger( MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface );
             outputFormat.setInteger( MediaFormat.KEY_BIT_RATE, mBitRate );
             outputFormat.setInteger( MediaFormat.KEY_FRAME_RATE, mFrameRate );
             outputFormat.setInteger( MediaFormat.KEY_I_FRAME_INTERVAL, mIFrameInterval );
-            outputFormat.setInteger( MediaFormat.KEY_MAX_WIDTH, mWidth );
-            outputFormat.setInteger( MediaFormat.KEY_MAX_HEIGHT, mHeight );
+            outputFormat.setInteger(MediaFormat.KEY_BITRATE_MODE, MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR_FD);
 
-            mEncoder = MediaCodec.createEncoderByType( MediaHelper.MIME_TYPE_AVC );
+
+            mEncoder = MediaCodec.createEncoderByType(MediaHelper.MIME_TYPE_AVC);
 
             mEncoder.configure( outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE );
+
+            Log.d(TAG+"test", "setupEncoder: " + outputFormat);
+
             mInputSurface = new InputSurface( mEncoder.createInputSurface() );
             mInputSurface.makeCurrent();
+
             mEncoder.start();
         } catch (Exception e) {
             Log.e(TAG, "setupEncoder: " + e);
@@ -321,7 +332,9 @@ public class VideoCompressor {
 
                     MediaFormat newFormat = mEncoder.getOutputFormat();
 
+                    Log.d(TAG+"test", "resampleVideo: " + newFormat);
                     mTrackIndex = mMuxer.addTrack( newFormat );
+
                     mMuxer.start();
                     mMuxerStarted = true;
                     if ( VERBOSE )
@@ -423,6 +436,8 @@ public class VideoCompressor {
             videoExtractor.selectTrack( trackIndexVideo );
 
             MediaFormat videoFormat = videoExtractor.getTrackFormat( trackIndexVideo );
+            Log.d(TAG+"test", "muxAudioAndVideo: " + videoFormat);
+
 
             //Audio Extractor
             MediaExtractor audioExtractor = setupExtractorForClip(mClips.get(0));

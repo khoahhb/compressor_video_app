@@ -5,65 +5,33 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.media.MediaCodec;
-import android.media.MediaCodecInfo;
-import android.media.MediaExtractor;
-import android.media.MediaFormat;
-import android.media.MediaMuxer;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.Surface;
 import android.view.View;
 import android.widget.Button;
 import android.widget.MediaController;
-import android.widget.TextView;
 import android.widget.VideoView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
+
     private static final int REQUEST_PERMISSION_CODE = 1;
     private static final String TAG = "MainActivity";
     private Button btnUpVideo;
     private VideoView vvOriginal, vvCompressed;
     private VideoCompressor videoCompressor;
     private Uri videoUri;
-
-    private static final int OUTPUT_VIDEO_WIDTH = 640;
-    private static final int OUTPUT_VIDEO_HEIGHT = 480;
-    private static final int OUTPUT_VIDEO_BITRATE = 1000000; // 1 Mbps
-    private static final int OUTPUT_VIDEO_FRAME_RATE = 30;
-    private static final int OUTPUT_VIDEO_IFRAME_INTERVAL = 5;
-
-    private final ActivityResultLauncher<Intent> selectVideo = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK) {
-                    if (result.getData() != null) {
-                        videoUri = result.getData().getData();
-                        try {
-//                            vvOriginal.setVideoURI(videoUri);
-//                            vvOriginal.start();
-                            compressVideo(getRealPathFromURI(this, videoUri));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-    );
+    private File dir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,21 +56,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case REQUEST_PERMISSION_CODE:
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0 &&
-                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    uploadVideo();
-                }
-        }
-    }
-
     public void initUI() {
+
+        dir = new File(this.getFilesDir(), "temp_videos");
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+
         btnUpVideo = findViewById(R.id.btnUpVideo);
         vvOriginal = findViewById(R.id.vvOriginal);
         vvCompressed = findViewById(R.id.vvCompressed);
@@ -112,7 +72,18 @@ public class MainActivity extends AppCompatActivity {
         MediaController mediaController2 = new MediaController(this);
         vvCompressed.setMediaController(mediaController2);
         mediaController2.setAnchorView(vvCompressed);
-        videoCompressor = new VideoCompressor();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case REQUEST_PERMISSION_CODE:
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    uploadVideo();
+                }
+        }
     }
 
     public void uploadVideo() {
@@ -121,163 +92,67 @@ public class MainActivity extends AppCompatActivity {
         selectVideo.launch(intent);
     }
 
-    private void compressVideo(String inputPath)  {
+    private final ActivityResultLauncher<Intent> selectVideo = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    if (result.getData() != null) {
+                        videoUri = result.getData().getData();
+                        try {
+                            vvOriginal.setVideoURI(videoUri);
+                            vvOriginal.start();
+                            compressVideo(getRealPathFromURI(this, videoUri));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+    );
+
+    private void compressVideo(String inputPath) throws IOException {
+
+        File inputFile = new File(inputPath);
+        File outputFile = new File(dir, "outputTemp.mp4");
+        if (!outputFile.exists()) {
+            outputFile.createNewFile();
+        }
+
         try {
-            // Create MediaExtractor to extract video data from the input file
-            MediaExtractor extractor = new MediaExtractor();
-            extractor.setDataSource(inputPath);
-
-            // Find and select the video track to be compressed
-            int videoTrackIndex = selectVideoTrack(extractor);
-            extractor.selectTrack(videoTrackIndex);
-
-            // Get the video format from the selected track
-            MediaFormat inputFormat = extractor.getTrackFormat(videoTrackIndex);
-
-            // Create MediaCodec for video decoding
-            MediaCodec decoder = MediaCodec.createDecoderByType(inputFormat.getString(MediaFormat.KEY_MIME));
-            decoder.configure(inputFormat, null, null, 0);
-            decoder.start();
-
-            // Create MediaCodec for video encoding
-            MediaCodec encoder = MediaCodec.createEncoderByType(inputFormat.getString(MediaFormat.KEY_MIME));
-            MediaFormat outputFormat = MediaFormat.createVideoFormat("video/avc", OUTPUT_VIDEO_WIDTH, OUTPUT_VIDEO_HEIGHT);
-            outputFormat.setInteger(MediaFormat.KEY_BIT_RATE, OUTPUT_VIDEO_BITRATE);
-            outputFormat.setInteger(MediaFormat.KEY_FRAME_RATE, OUTPUT_VIDEO_FRAME_RATE);
-            outputFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
-            outputFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, OUTPUT_VIDEO_IFRAME_INTERVAL);
-            encoder.configure(outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-
-            // Create Surface from the encoder for input
-            Surface inputSurface = encoder.createInputSurface();
-            Log.d(TAG, "Output path: " + getOutputVideoFilePath());
-            // Create MediaMuxer for output file
-            MediaMuxer muxer = new MediaMuxer(getOutputVideoFilePath(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-            muxer.addTrack(outputFormat);
-
-            // Start the encoder and muxer
-            encoder.start();
-            muxer.start();
-
-            // Compress and write video data
-            compressAndWriteVideo(encoder, decoder, extractor, muxer, inputSurface);
-
-            // Release resources
-            release(encoder, decoder, extractor, muxer);
-        }catch (Exception e){
-            Log.e(TAG, "Problem in compress video");
+            VideoCompressor compressor = new VideoCompressor(this);
+            compressor.addVideo(new InputVideo(Uri.fromFile(inputFile)));
+            compressor.setOutput("outputReal.mp4");
+            compressor.setOutputBitRate(1000000);
+            compressor.start();
+        } catch (Throwable e) {
+            Log.e(TAG, "Problem: " + e);
             e.printStackTrace();
         }
 
-    }
-    private int selectVideoTrack(MediaExtractor extractor) {
-        int trackCount = extractor.getTrackCount();
-        for (int i = 0; i < trackCount; i++) {
-            MediaFormat format = extractor.getTrackFormat(i);
-            String mime = format.getString(MediaFormat.KEY_MIME);
-            if (mime.startsWith("video/")) {
-                return i;
-            }
-        }
-        return -1;
-    }
 
-    private void compressAndWriteVideo(MediaCodec encoder, MediaCodec decoder, MediaExtractor extractor, MediaMuxer muxer, Surface inputSurface) {
-        final int TIMEOUT_US = 10000;
-        boolean inputEnd = false;
-        boolean outputEnd = false;
-        MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-
-        while (!outputEnd) {
-            if (!inputEnd) {
-                int inputBufferIndex = decoder.dequeueInputBuffer(TIMEOUT_US);
-                if (inputBufferIndex >= 0) {
-                    Log.d(TAG, "getSampleTime " + extractor.getSampleTime()/ 1000);
-                    ByteBuffer inputBuffer = decoder.getInputBuffer(inputBufferIndex);
-                    int sampleSize = extractor.readSampleData(inputBuffer, 0);
-                    if (sampleSize < 0) {
-                        inputEnd = true;
-                        decoder.queueInputBuffer(inputBufferIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
-                    } else {
-                        long presentationTimeUs = extractor.getSampleTime();
-                        decoder.queueInputBuffer(inputBufferIndex, 0, sampleSize, presentationTimeUs, 0);
-                        extractor.advance();
-                    }
-                }
-            }
-
-            int outputBufferIndex = decoder.dequeueOutputBuffer(bufferInfo, TIMEOUT_US);
-            if (outputBufferIndex >= 0) {
-                boolean render = bufferInfo.size != 0;
-                decoder.releaseOutputBuffer(outputBufferIndex, render);
-
-                if (render) {
-                    int encoderInputBufferIndex = encoder.dequeueInputBuffer(TIMEOUT_US);
-                    if (encoderInputBufferIndex >= 0) {
-                        ByteBuffer encoderInputBuffer = encoder.getInputBuffer(encoderInputBufferIndex);
-                        encoderInputBuffer.clear();
-                        encoderInputBuffer.put(decoder.getOutputBuffer(outputBufferIndex));
-                        encoder.queueInputBuffer(encoderInputBufferIndex, 0, bufferInfo.size, bufferInfo.presentationTimeUs, bufferInfo.flags);
-                    }
-                }
-
-                if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                    inputEnd = true;
-                }
-            }
-
-            int encoderOutputBufferIndex = encoder.dequeueOutputBuffer(bufferInfo, TIMEOUT_US);
-            if (encoderOutputBufferIndex >= 0) {
-                ByteBuffer encoderOutputBuffer = encoder.getOutputBuffer(encoderOutputBufferIndex);
-                muxer.writeSampleData(0, encoderOutputBuffer, bufferInfo);
-                encoder.releaseOutputBuffer(encoderOutputBufferIndex, false);
-                if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                    outputEnd = true;
-                }
-            }
-        }
-    }
-
-    private void release(MediaCodec encoder, MediaCodec decoder, MediaExtractor extractor, MediaMuxer muxer) {
-        if (encoder != null) {
-            encoder.stop();
-            encoder.release();
-        }
-        if (decoder != null) {
-            decoder.stop();
-            decoder.release();
-        }
-        if (extractor != null) {
-            extractor.release();
-        }
-        if (muxer != null) {
-            muxer.stop();
-            muxer.release();
-        }
-    }
-
-    @NonNull
-    private String getOutputVideoFilePath() {
-//        File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
-//        if (!directory.exists()) {
-//            directory.mkdirs();
+//        try {
+//            vvCompressed.setVideoURI(Uri.fromFile(outputFile));
+//            vvCompressed.start();
+//
+//        } catch (Exception e) {
+//            Log.e("VideoView", "Error occurred while setting video URI: " + e.getMessage());
+//            e.printStackTrace();
 //        }
-//        return directory.getAbsolutePath() + File.separator + "output.mp4";
-        File dir = new File(this.getFilesDir(), "temp_videos");
-        if(!dir.exists()){
-            dir.mkdir();
-        }
-        File outputFile = new File(dir, "output.mp4");
-        if(!outputFile.exists()){
-            try {
-                outputFile.createNewFile();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
 
-        return outputFile.getAbsolutePath();
+
+//        File inputFile = new File(inputPath);
+//        File outputFile = new File(dir, createOutputName(inputPath));
+//        outputFile.createNewFile();
     }
+
+    public String createOutputName(String inputPath) {
+        String inputName = inputPath.substring(inputPath.lastIndexOf('/') + 1, inputPath.lastIndexOf('.'));
+
+        String outputName = inputName + "_" + (new Date()).getTime() + ".mp4";
+
+        return outputName;
+    }
+
     public String getRealPathFromURI(Context context, Uri contentUri) {
         Cursor cursor = null;
         try {
@@ -293,20 +168,3 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
-
-//            MediaScannerConnection.scanFile(this, new String[]{videoFile.getAbsolutePath()}, null,
-//                    (path, uri1) ->
-//                    {
-//                    runOnUiThread(() -> {
-//                    try {
-//                    vvCompressed.setVideoURI(uri1);
-//                    vvCompressed.start();
-//
-//                    } catch (Exception e) {
-//                    Log.e("VideoView", "Error occurred while setting video URI: " + e.getMessage());
-//                    e.printStackTrace();
-//                    }
-//
-//                    });
-//                    }
-//                    );

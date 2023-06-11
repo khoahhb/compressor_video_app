@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
             VideoCompressor compressor = new VideoCompressor(this);
             compressor.addVideo(new InputVideo(Uri.fromFile(inputFile)));
             compressor.setOutput("outputReal.mp4");
-            compressor.setOutputBitRate(3500000);
+            compressor.setOutputBitRate(1000000);
             compressor.start();
         } catch (Throwable e) {
             Log.e(TAG, "Problem: " + e);
