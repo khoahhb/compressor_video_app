@@ -34,11 +34,13 @@ class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
     private Object mFrameSyncObject = new Object(); // guards mFrameAvailable
     private boolean mFrameAvailable;
     private TextureRender mTextureRender;
+    private int mRotation = 0;
 
     /**
      * Creates an OutputSurface backed by a pbuffer with the specifed dimensions. The new EGL context and surface will be made current. Creates a Surface that can be passed to MediaCodec.configure().
      */
-    public OutputSurface( int width, int height ) {
+    public OutputSurface( int width, int height, int rotation ) {
+        this.mRotation = rotation;
         if ( width <= 0 || height <= 0 ) {
             throw new IllegalArgumentException();
         }
@@ -50,7 +52,8 @@ class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
     /**
      * Creates an OutputSurface using the current EGL context. Creates a Surface that can be passed to MediaCodec.configure().
      */
-    public OutputSurface() {
+    public OutputSurface(int rotation) {
+        this.mRotation = rotation;
         setup();
     }
 
@@ -58,7 +61,7 @@ class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
      * Creates instances of TextureRender and SurfaceTexture, and a Surface associated with the SurfaceTexture.
      */
     private void setup() {
-        mTextureRender = new TextureRender();
+        mTextureRender = new TextureRender(mRotation);
         mTextureRender.surfaceCreated();
         // Even if we don't access the SurfaceTexture after the constructor returns, we
         // still need to keep a reference to it. The Surface doesn't retain a reference

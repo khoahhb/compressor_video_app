@@ -1,23 +1,17 @@
 package com.example.compress_video_app;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
-import android.media.MediaCodecList;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Looper;
 import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class VideoCompressor {
@@ -25,16 +19,9 @@ public class VideoCompressor {
     private static final String TAG = "VideoCompressor";
 
     private final File dir;
-    private static final int TIMEOUT_USEC = 0;
+    private Context mContext;
 
-    public static final int WIDTH_QCIF = 176;
-    public static final int HEIGHT_QCIF = 144;
-    public static final int BITRATE_QCIF = 1000000;
-
-    public static final int WIDTH_QVGA = 320;
-    public static final int HEIGHT_QVGA = 240;
-    public static final int BITRATE_QVGA = 2000000;
-
+    private static final int TIMEOUT_USE = 0;
     public static final int WIDTH_720P = 1280;
     public static final int HEIGHT_720P = 720;
     public static final int BITRATE_720P = 6000000;
@@ -46,82 +33,39 @@ public class VideoCompressor {
     public static final int FPS_15 = 15; // 15fps
     public static final int IFRAME_INTERVAL_10 = 10;
 
+    private String mMime = MediaHelper.MIME_TYPE_AVC;
     private int mWidth = WIDTH_720P;
     private int mHeight = HEIGHT_720P;
+    private int mRotation = 0;
     private int mBitRate = BITRATE_720P;
     private int mFrameRate = FPS_30;
     private int mIFrameInterval = IFRAME_INTERVAL_10;
 
-    List<InputVideo> mClips = new ArrayList<>();
-    private final Uri mOutputTempUri;
+    InputVideo mInput = null;
 
+    private Uri mOutputTempUri;
     private Uri mOutputRealUri;
 
-    InputSurface mInputSurface;
-    OutputSurface mOutputSurface;
-    MediaCodec mEncoder = null;
-    MediaMuxer mMuxer = null;
-    int mTrackIndex = -1;
-    boolean mMuxerStarted = false;
-    long mLastSampleTime = 0;
-    long mEncoderPresentationTimeUs = 0;
+    private InputSurface mInputSurface;
+    private OutputSurface mOutputSurface;
 
-    private MediaFormat inputFormat;
+    private MediaMuxer mMuxer = null;
+    private MediaCodec mEncoder = null;
 
-    public VideoCompressor(Context context) throws IOException {
-        dir = new File(context.getFilesDir(), "temp_videos");
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
-        File outputTempFile = new File(dir, "outputTemp.mp4");
-        if (!outputTempFile.exists()) {
-            outputTempFile.createNewFile();
-        }
-        mOutputTempUri = Uri.fromFile(outputTempFile);
-    }
+    private String mInputName;
+    private MediaFormat mInputFormat;
 
-    public void addVideo(InputVideo clip )
-    {
-        mClips.add( clip );
+    private int mTrackIndex = -1;
+    private long mLastSampleTime = 0;
+    private long mEncoderPresentationTimeUs = 0;
 
-        MediaExtractor extractor = setupExtractorForClip(clip);
+    private CompressListener mCompressListener;
 
-        if(extractor == null ) {
-            return;
-        }
-
-        int trackIndex = getVideoTrackIndex(extractor);
-        extractor.selectTrack( trackIndex );
-
-        inputFormat = extractor.getTrackFormat( trackIndex );
-        Log.d(TAG+"test", "addVideo: " + inputFormat);
-
-
-        int rotation = inputFormat.containsKey(MediaFormat.KEY_ROTATION) ? inputFormat.getInteger(MediaFormat.KEY_ROTATION) : 0;
-
-        if(rotation == 90 ||rotation == 270){
-            mHeight = inputFormat.getInteger(MediaFormat.KEY_WIDTH);
-            mWidth = inputFormat.getInteger(MediaFormat.KEY_HEIGHT);
-        }else{
-            mHeight = inputFormat.getInteger(MediaFormat.KEY_HEIGHT);
-            mWidth = inputFormat.getInteger(MediaFormat.KEY_WIDTH);
-        }
-    }
-
-    public void setOutput( String realName ) throws IOException {
-        File outputRealFile = new File(dir, realName);
-        if (!outputRealFile.exists()) {
-            outputRealFile.createNewFile();
-        }
-        mOutputRealUri = Uri.fromFile(outputRealFile);
-    }
-
-    public void setOutputResolution( int width, int height ) {
-        if ( ( width % 16 ) != 0 || ( height % 16 ) != 0 ) {
-            Log.w( TAG, "WARNING: width or height not multiple of 16" );
-        }
-        mWidth = width;
-        mHeight = height;
+    public interface CompressListener {
+        void onStart();
+        void onSuccess(String compressVideoPath);
+        void onFail();
+        void onProgress(float percent);
     }
 
     public void setOutputBitRate( int bitRate ) {
@@ -134,6 +78,95 @@ public class VideoCompressor {
 
     public void setOutputIFrameInterval( int IFrameInterval ) {
         mIFrameInterval = IFrameInterval;
+    }
+
+    public VideoCompressor(Context context, CompressListener compressListener) throws IOException {
+        this.mCompressListener = compressListener;
+        this.mContext = context;
+        dir = new File(mContext.getFilesDir(), "temp_videos");
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+    }
+
+    public void setProfileH264Normal() throws IOException {
+        mMime = MediaHelper.MIME_TYPE_AVC;
+        mBitRate = mHeight*mWidth*2;
+        mFrameRate = 30;
+        mIFrameInterval = 10;
+        setOutput("normal");
+    }
+    public void setProfileH264Medium() throws IOException {
+        mMime = MediaHelper.MIME_TYPE_AVC;
+        mBitRate = (int) (mHeight*mWidth);
+        mFrameRate = 30;
+        mIFrameInterval = 10;
+        setOutput("medium");
+    }
+    public void setProfileH264High() throws IOException {
+        mMime = MediaHelper.MIME_TYPE_AVC;
+        mBitRate = (int) (mHeight*mWidth*0.5);
+        mFrameRate = 30;
+        mIFrameInterval = 10;
+        setOutput("high");
+    }
+    public void setProfileH265Normal() throws IOException {
+        mMime = MediaHelper.MIME_TYPE_HEVC;
+        mBitRate = mHeight*mWidth*2;
+        mFrameRate = 30;
+        mIFrameInterval = 10;
+        setOutput("normal");
+    }
+    public void setProfileH265Medium() throws IOException {
+        mMime = MediaHelper.MIME_TYPE_HEVC;
+        mBitRate = (int) (mHeight*mWidth);
+        mFrameRate = 30;
+        mIFrameInterval = 10;
+        setOutput("medium");
+    }
+    public void setProfileH265High() throws IOException {
+        mMime = MediaHelper.MIME_TYPE_HEVC;
+        mBitRate = (int) (mHeight*mWidth*0.5);
+        mFrameRate = 30;
+        mIFrameInterval = 10;
+        setOutput("high");
+    }
+
+    public void setInput(InputVideo video ) {
+        mInput = new InputVideo(video.getUri());
+        getInputFormatInfo(video);
+    }
+
+    private void setOutput( String type ) throws IOException {
+
+        String realName = type + "-" + mInputName + ".mp4";
+
+        File outputTempFile = new File(dir, "temp-" + realName);
+        if (!outputTempFile.exists()) {
+            outputTempFile.createNewFile();
+        }
+        mOutputTempUri = Uri.fromFile(outputTempFile);
+
+        File outputRealFile = new File(dir, realName);
+        if (!outputRealFile.exists()) {
+            outputRealFile.createNewFile();
+        }
+        mOutputRealUri = Uri.fromFile(outputRealFile);
+    }
+
+    private void getInputFormatInfo(InputVideo video ){
+        String inputPath = mInput.getUri().getPath();
+        mInputName = inputPath.substring(inputPath.lastIndexOf('/') + 1, inputPath.lastIndexOf('.'));
+
+        MediaExtractor extractor = setupExtractorForVideo(video);
+
+        int trackIndex = getVideoTrackIndex(extractor);
+        extractor.selectTrack( trackIndex );
+        mInputFormat = extractor.getTrackFormat( trackIndex );
+
+        mRotation = mInputFormat.containsKey(MediaFormat.KEY_ROTATION) ? mInputFormat.getInteger(MediaFormat.KEY_ROTATION) : 0;
+        mHeight = mInputFormat.getInteger(MediaFormat.KEY_HEIGHT);
+        mWidth = mInputFormat.getInteger(MediaFormat.KEY_WIDTH);
     }
 
     public void start() throws Throwable {
@@ -152,7 +185,7 @@ public class VideoCompressor {
         @Override
         public void run() {
             try {
-                resampleVideo();
+                compressVideo();
 
                 muxAudioAndVideo();
 
@@ -163,31 +196,16 @@ public class VideoCompressor {
 
     }
 
-    private void setupEncoder() {
-        try {
-            MediaFormat outputFormat = MediaFormat.createVideoFormat( MediaHelper.MIME_TYPE_AVC, mWidth, mHeight );
+    private void compressVideo() {
 
-            outputFormat.setInteger( MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface );
-            outputFormat.setInteger( MediaFormat.KEY_BIT_RATE, mBitRate );
-            outputFormat.setInteger( MediaFormat.KEY_FRAME_RATE, mFrameRate );
-            outputFormat.setInteger( MediaFormat.KEY_I_FRAME_INTERVAL, mIFrameInterval );
-            outputFormat.setInteger(MediaFormat.KEY_BITRATE_MODE, MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR_FD);
+        setupMuxer();
+        setupEncoder();
 
+        feedVideoToEncoder( mInput );
 
-            mEncoder = MediaCodec.createEncoderByType(MediaHelper.MIME_TYPE_AVC);
+        mEncoder.signalEndOfInputStream();
 
-            mEncoder.configure( outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE );
-
-            Log.d(TAG+"test", "setupEncoder: " + outputFormat);
-
-            mInputSurface = new InputSurface( mEncoder.createInputSurface() );
-            mInputSurface.makeCurrent();
-
-            mEncoder.start();
-        } catch (Exception e) {
-            Log.e(TAG, "setupEncoder: " + e);
-            e.printStackTrace();
-        }
+        releaseOutputResources();
     }
 
     private void setupMuxer() {
@@ -199,27 +217,40 @@ public class VideoCompressor {
         }
     }
 
-    private void resampleVideo() {
+    private void setupEncoder() {
+        try {
 
-        setupMuxer();
-        setupEncoder();
+            MediaFormat outputFormat = MediaFormat.createVideoFormat( mMime, mWidth, mHeight );
 
-        for ( InputVideo clip : mClips ) {
-            feedClipToEncoder( clip );
+            outputFormat.setInteger( MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface );
+            outputFormat.setInteger( MediaFormat.KEY_BIT_RATE, mBitRate );
+            outputFormat.setInteger( MediaFormat.KEY_FRAME_RATE, mFrameRate );
+            outputFormat.setInteger( MediaFormat.KEY_I_FRAME_INTERVAL, mIFrameInterval );
+            outputFormat.setInteger(MediaFormat.KEY_BITRATE_MODE, MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR_FD);
+
+            Log.d(TAG+"test", "setupEncoder: " + outputFormat);
+
+            mEncoder = MediaCodec.createEncoderByType(mMime);
+
+            mEncoder.configure( outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE );
+
+            mInputSurface = new InputSurface( mEncoder.createInputSurface() );
+            mInputSurface.makeCurrent();
+
+            mEncoder.start();
+        } catch (Exception e) {
+            Log.e(TAG, "setupEncoder: " + e);
+            e.printStackTrace();
         }
-
-        mEncoder.signalEndOfInputStream();
-
-        releaseOutputResources();
     }
 
-    private void feedClipToEncoder( InputVideo clip ) {
+    private void feedVideoToEncoder(InputVideo video ) {
 
         mLastSampleTime = 0;
 
         MediaCodec decoder = null;
 
-        MediaExtractor extractor = setupExtractorForClip(clip);
+        MediaExtractor extractor = setupExtractorForVideo(video);
 
         if(extractor == null ) {
             return;
@@ -228,25 +259,25 @@ public class VideoCompressor {
         int trackIndex = getVideoTrackIndex(extractor);
         extractor.selectTrack( trackIndex );
 
-        MediaFormat clipFormat = extractor.getTrackFormat( trackIndex );
+        MediaFormat videoFormat = extractor.getTrackFormat( trackIndex );
 
-        if ( clip.getStartTime() != -1 ) {
-            extractor.seekTo( clip.getStartTime() * 1000, MediaExtractor.SEEK_TO_PREVIOUS_SYNC );
-            clip.setStartTime( extractor.getSampleTime() / 1000 );
+        if ( video.getStartTime() != -1 ) {
+            extractor.seekTo( video.getStartTime() * 1000, MediaExtractor.SEEK_TO_PREVIOUS_SYNC );
+            video.setStartTime( extractor.getSampleTime() / 1000 );
         }
 
         try {
             decoder = MediaCodec.createDecoderByType( MediaHelper.MIME_TYPE_AVC );
-            mOutputSurface = new OutputSurface();
+            mOutputSurface = new OutputSurface(mRotation);
 
-            decoder.configure( clipFormat, mOutputSurface.getSurface(), null, 0 );
+            decoder.configure( videoFormat, mOutputSurface.getSurface(), null, 0 );
             decoder.start();
 
-            resampleVideo( extractor, decoder, clip );
+            compressVideo( extractor, decoder, video );
 
 
         } catch (IOException e) {
-            Log.e(TAG, "feedClipToEncoder: " + e);
+            Log.e(TAG, "feedVideoToEncoder: " + e);
             e.printStackTrace();
         } finally {
 
@@ -265,17 +296,17 @@ public class VideoCompressor {
         }
     }
 
-    private void resampleVideo( MediaExtractor extractor, MediaCodec decoder, InputVideo clip ) {
+    private void compressVideo(MediaExtractor extractor, MediaCodec decoder, InputVideo video ) {
         ByteBuffer[] decoderInputBuffers = decoder.getInputBuffers();
         ByteBuffer[] encoderOutputBuffers = mEncoder.getOutputBuffers();
         MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
         int inputChunk = 0;
         int outputCount = 0;
 
-        long endTime = clip.getEndTime();
+        long endTime = video.getEndTime();
 
         if ( endTime == -1 ) {
-            endTime = clip.getVideoDuration();
+            endTime = video.getVideoDuration();
         }
 
         boolean outputDoneNextTimeWeCheck = false;
@@ -288,7 +319,7 @@ public class VideoCompressor {
             if ( VERBOSE )
                 Log.d( TAG, "edit loop" );
             if ( !inputDone ) {
-                int inputBufIndex = decoder.dequeueInputBuffer( TIMEOUT_USEC );
+                int inputBufIndex = decoder.dequeueInputBuffer(TIMEOUT_USE);
                 if ( inputBufIndex >= 0 ) {
                     if ( extractor.getSampleTime() / 1000 >= endTime ) {
                         decoder.queueInputBuffer( inputBufIndex, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM );
@@ -301,10 +332,12 @@ public class VideoCompressor {
 
                         int sampleSize = extractor.readSampleData( inputBuf, 0 );
                         if ( sampleSize < 0 ) {
-                            Log.d( TAG, "InputBuffer BUFFER_FLAG_END_OF_STREAM" );
+                            if ( VERBOSE )
+                                Log.d( TAG, "InputBuffer BUFFER_FLAG_END_OF_STREAM" );
                             decoder.queueInputBuffer( inputBufIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM );
                         } else {
-//                            Log.d( TAG, "InputBuffer ADVANCING" );
+                            if ( VERBOSE )
+                                Log.d( TAG, "InputBuffer ADVANCING" );
                             decoder.queueInputBuffer( inputBufIndex, 0, sampleSize, extractor.getSampleTime(), 0 );
                             extractor.advance();
                         }
@@ -319,7 +352,7 @@ public class VideoCompressor {
             boolean decoderOutputAvailable = !decoderDone;
             boolean encoderOutputAvailable = true;
             while ( decoderOutputAvailable || encoderOutputAvailable ) {
-                int encoderStatus = mEncoder.dequeueOutputBuffer( info, TIMEOUT_USEC );
+                int encoderStatus = mEncoder.dequeueOutputBuffer( info, TIMEOUT_USE);
                 if ( encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER ) {
                     if ( VERBOSE )
                         Log.d( TAG, "no output from encoder available" );
@@ -332,11 +365,11 @@ public class VideoCompressor {
 
                     MediaFormat newFormat = mEncoder.getOutputFormat();
 
-                    Log.d(TAG+"test", "resampleVideo: " + newFormat);
+                    Log.d(TAG+"test", "resampleVideo - output: " + newFormat);
                     mTrackIndex = mMuxer.addTrack( newFormat );
 
+                    mMuxer.setOrientationHint(mRotation);
                     mMuxer.start();
-                    mMuxerStarted = true;
                     if ( VERBOSE )
                         Log.d( TAG, "encoder output format changed: " + newFormat );
                 } else if ( encoderStatus < 0 ) {
@@ -367,7 +400,7 @@ public class VideoCompressor {
                     continue;
                 }
                 if ( !decoderDone ) {
-                    int decoderStatus = decoder.dequeueOutputBuffer( info, TIMEOUT_USEC );
+                    int decoderStatus = decoder.dequeueOutputBuffer( info, TIMEOUT_USE);
                     if ( decoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER ) {
                         if ( VERBOSE )
                             Log.d( TAG, "no output from decoder available" );
@@ -377,6 +410,7 @@ public class VideoCompressor {
                             Log.d( TAG, "decoder output buffers changed (we don't care)" );
                     } else if ( decoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED ) {
                         MediaFormat newFormat = decoder.getOutputFormat();
+                        Log.d(TAG+"test", "resampleVideo - input: " + newFormat);
                         if ( VERBOSE )
                             Log.d( TAG, "decoder output format changed: " + newFormat );
                     } else if ( decoderStatus < 0 ) {
@@ -394,11 +428,11 @@ public class VideoCompressor {
 
                             long nSecs = info.presentationTimeUs * 1000;
 
-                            if ( clip.getStartTime() != -1 ) {
-                                nSecs = ( info.presentationTimeUs - ( clip.getStartTime() * 1000 ) ) * 1000;
+                            if ( video.getStartTime() != -1 ) {
+                                nSecs = ( info.presentationTimeUs - ( video.getStartTime() * 1000 ) ) * 1000;
                             }
 
-                            Log.d( "this", "Setting presentation time " + nSecs / ( 1000 * 1000 ) );
+                            Log.d( TAG, "Setting presentation time " + nSecs / ( 1000 * 1000 ) );
                             nSecs = Math.max( 0, nSecs );
 
                             mEncoderPresentationTimeUs += ( nSecs - mLastSampleTime );
@@ -423,13 +457,12 @@ public class VideoCompressor {
 
     }
 
-    @SuppressLint("WrongConstant")
     private void muxAudioAndVideo(){
 
         try {
 
             //Video Extractor
-            MediaExtractor videoExtractor = setupExtractorForClip(new InputVideo(mOutputTempUri));
+            MediaExtractor videoExtractor = setupExtractorForVideo(new InputVideo(mOutputTempUri));
 
             int trackIndexVideo = getVideoTrackIndex(videoExtractor);
 
@@ -440,7 +473,7 @@ public class VideoCompressor {
 
 
             //Audio Extractor
-            MediaExtractor audioExtractor = setupExtractorForClip(mClips.get(0));
+            MediaExtractor audioExtractor = setupExtractorForVideo(mInput);
 
             int trackIndexAudio = getAudioTrackIndex(audioExtractor);
 
@@ -452,6 +485,8 @@ public class VideoCompressor {
             MediaMuxer muxer = new MediaMuxer( mOutputRealUri.getPath(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4 );
             int videoIndex = muxer.addTrack(videoFormat);
             int audioIndex = muxer.addTrack(audioFormat);
+
+            muxer.setOrientationHint(mRotation);
 
 
             boolean sawEOS = false;
@@ -513,10 +548,12 @@ public class VideoCompressor {
                 }
             }
 
+            File temp = new File(mOutputTempUri.getPath());
+            if(temp.exists())
+                temp.delete();
 
             muxer.stop();
             muxer.release();
-
 
         }catch (Exception e){
             Log.e("TestMuxAudio", "Problem: " + e.toString());
@@ -525,11 +562,30 @@ public class VideoCompressor {
 
     }
 
-    private MediaExtractor setupExtractorForClip(InputVideo clip ) {
+    private void releaseOutputResources() {
+
+        if ( mInputSurface != null ) {
+            mInputSurface.release();
+        }
+
+        if ( mEncoder != null ) {
+            mEncoder.stop();
+            mEncoder.release();
+        }
+
+        if ( mMuxer != null ) {
+            mMuxer.stop();
+            mMuxer.release();
+            mMuxer = null;
+        }
+
+    }
+
+    private MediaExtractor setupExtractorForVideo(InputVideo video ) {
 
         MediaExtractor extractor = new MediaExtractor();
         try {
-            extractor.setDataSource( clip.getUri().toString() );
+            extractor.setDataSource( video.getUri().toString() );
         } catch ( IOException e ) {
             e.printStackTrace();
             return null;
@@ -566,24 +622,6 @@ public class VideoCompressor {
             }
         }
         return -1;
-    }
-
-    private void releaseOutputResources() {
-
-        if ( mInputSurface != null ) {
-            mInputSurface.release();
-        }
-
-        if ( mEncoder != null ) {
-            mEncoder.stop();
-            mEncoder.release();
-        }
-
-        if ( mMuxer != null ) {
-            mMuxer.stop();
-            mMuxer.release();
-            mMuxer = null;
-        }
     }
 
 }

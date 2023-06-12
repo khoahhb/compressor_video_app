@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.MediaController;
+import android.widget.ProgressBar;
 import android.widget.VideoView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -27,11 +28,27 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_PERMISSION_CODE = 1;
     private static final String TAG = "MainActivity";
-    private Button btnUpVideo;
-    private VideoView vvOriginal, vvCompressed;
+    private Button btnUpVideo,btnCompress,btnViewCompressedList;
+    private VideoView vvOriginal;
     private VideoCompressor videoCompressor;
+    private ProgressBar pbIsCompressed;
     private Uri videoUri;
-    private File dir;
+    private final ActivityResultLauncher<Intent> selectVideo = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    if (result.getData() != null) {
+                        videoUri = result.getData().getData();
+                        try {
+                            vvOriginal.setVideoURI(videoUri);
+                            vvOriginal.start();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,24 +71,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-    }
+        btnCompress.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    pbIsCompressed.setVisibility(View.VISIBLE);
+                    compressVideo(getRealPathFromURI(MainActivity.this, videoUri));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
-    public void initUI() {
-
-        dir = new File(this.getFilesDir(), "temp_videos");
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
-
-        btnUpVideo = findViewById(R.id.btnUpVideo);
-        vvOriginal = findViewById(R.id.vvOriginal);
-        vvCompressed = findViewById(R.id.vvCompressed);
-        MediaController mediaController = new MediaController(this);
-        vvOriginal.setMediaController(mediaController);
-        mediaController.setAnchorView(vvOriginal);
-        MediaController mediaController2 = new MediaController(this);
-        vvCompressed.setMediaController(mediaController2);
-        mediaController2.setAnchorView(vvCompressed);
     }
 
     @Override
@@ -86,71 +97,57 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void initUI() {
+        btnUpVideo = findViewById(R.id.btnUpVideo);
+        btnCompress = findViewById(R.id.btnCompress);
+        btnViewCompressedList = findViewById(R.id.btnViewCompressedList);
+        pbIsCompressed = findViewById(R.id.pbIsCompressed);
+        vvOriginal = findViewById(R.id.vvOriginal);
+        MediaController mediaController = new MediaController(this);
+        vvOriginal.setMediaController(mediaController);
+        mediaController.setAnchorView(vvOriginal);
+    }
+
     public void uploadVideo() {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("video/*");
         selectVideo.launch(intent);
     }
 
-    private final ActivityResultLauncher<Intent> selectVideo = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK) {
-                    if (result.getData() != null) {
-                        videoUri = result.getData().getData();
-                        try {
-                            vvOriginal.setVideoURI(videoUri);
-                            vvOriginal.start();
-                            compressVideo(getRealPathFromURI(this, videoUri));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-    );
-
     private void compressVideo(String inputPath) throws IOException {
 
         File inputFile = new File(inputPath);
-        File outputFile = new File(dir, "outputTemp.mp4");
-        if (!outputFile.exists()) {
-            outputFile.createNewFile();
-        }
 
         try {
-            VideoCompressor compressor = new VideoCompressor(this);
-            compressor.addVideo(new InputVideo(Uri.fromFile(inputFile)));
-            compressor.setOutput("outputReal.mp4");
-            compressor.setOutputBitRate(1000000);
+            VideoCompressor compressor = new VideoCompressor(this, new VideoCompressor.CompressListener() {
+                @Override
+                public void onStart() {
+
+                }
+
+                @Override
+                public void onSuccess(String compressVideoPath) {
+
+                }
+
+                @Override
+                public void onFail() {
+
+                }
+
+                @Override
+                public void onProgress(float percent) {
+
+                }
+            });
+            compressor.setInput(new InputVideo(Uri.fromFile(inputFile)));
+            compressor.setProfileH264High();
             compressor.start();
+
         } catch (Throwable e) {
             Log.e(TAG, "Problem: " + e);
             e.printStackTrace();
         }
-
-
-//        try {
-//            vvCompressed.setVideoURI(Uri.fromFile(outputFile));
-//            vvCompressed.start();
-//
-//        } catch (Exception e) {
-//            Log.e("VideoView", "Error occurred while setting video URI: " + e.getMessage());
-//            e.printStackTrace();
-//        }
-
-
-//        File inputFile = new File(inputPath);
-//        File outputFile = new File(dir, createOutputName(inputPath));
-//        outputFile.createNewFile();
-    }
-
-    public String createOutputName(String inputPath) {
-        String inputName = inputPath.substring(inputPath.lastIndexOf('/') + 1, inputPath.lastIndexOf('.'));
-
-        String outputName = inputName + "_" + (new Date()).getTime() + ".mp4";
-
-        return outputName;
     }
 
     public String getRealPathFromURI(Context context, Uri contentUri) {

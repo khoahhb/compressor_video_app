@@ -31,8 +31,11 @@ class TextureRender {
     private int muSTMatrixHandle;
     private int maPositionHandle;
     private int maTextureHandle;
+    private int mRotation = 0;
 
-    public TextureRender() {
+
+    public TextureRender(int rotation) {
+        this.mRotation = rotation;
         mTriangleVertices = ByteBuffer.allocateDirect( mTriangleVerticesData.length * FLOAT_SIZE_BYTES ).order( ByteOrder.nativeOrder() ).asFloatBuffer();
         mTriangleVertices.put( mTriangleVerticesData ).position( 0 );
         Matrix.setIdentityM( mSTMatrix, 0 );
@@ -62,6 +65,9 @@ class TextureRender {
         GLES20.glEnableVertexAttribArray( maTextureHandle );
         checkGlError( "glEnableVertexAttribArray maTextureHandle" );
         Matrix.setIdentityM( mMVPMatrix, 0 );
+        if (mRotation != 0) {
+            Matrix.rotateM(mMVPMatrix, 0, mRotation, 0, 0, 1);
+        }
         GLES20.glUniformMatrix4fv( muMVPMatrixHandle, 1, false, mMVPMatrix, 0 );
         GLES20.glUniformMatrix4fv( muSTMatrixHandle, 1, false, mSTMatrix, 0 );
         GLES20.glDrawArrays( GLES20.GL_TRIANGLE_STRIP, 0, 4 );
