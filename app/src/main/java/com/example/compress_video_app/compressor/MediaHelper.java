@@ -1,4 +1,4 @@
-package com.example.compress_video_app;
+package com.example.compress_video_app.compressor;
 
 import android.graphics.Bitmap;
 import android.media.MediaExtractor;
@@ -43,7 +43,7 @@ public class MediaHelper {
 
     public static int GetMediaMetadataRetrieverPropertyInteger(Uri uri, int key, int defaultValue) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(uri.toString());
+        retriever.setDataSource(uri.getPath());
         String value = retriever.extractMetadata(key);
 
         if (value == null) {

@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         MediaController mediaController = new MediaController(this);
         vvOriginal.setMediaController(mediaController);
         mediaController.setAnchorView(vvOriginal);
+
         MediaController mediaController2 = new MediaController(this);
         vvCompressed.setMediaController(mediaController2);
         mediaController2.setAnchorView(vvCompressed);

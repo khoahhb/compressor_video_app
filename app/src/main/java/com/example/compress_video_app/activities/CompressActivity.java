@@ -1,4 +1,4 @@
-package com.example.compress_video_app;
+package com.example.compress_video_app.activities;
 
 import android.Manifest;
 import android.content.Context;
@@ -20,14 +20,17 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.compress_video_app.R;
+import com.example.compress_video_app.compressor.InputVideo;
+import com.example.compress_video_app.compressor.VideoCompressor;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 
-public class MainActivity extends AppCompatActivity {
+public class CompressActivity extends AppCompatActivity {
 
     private static final int REQUEST_PERMISSION_CODE = 1;
-    private static final String TAG = "MainActivity";
+    private static final String TAG =  "CompressActivity";
     private Button btnUpVideo,btnCompress,btnViewCompressedList;
     private VideoView vvOriginal;
     private VideoCompressor videoCompressor;
@@ -76,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 try {
                     pbIsCompressed.setVisibility(View.VISIBLE);
-                    compressVideo(getRealPathFromURI(MainActivity.this, videoUri));
+                    compressVideo(getRealPathFromURI (CompressActivity.this, videoUri));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

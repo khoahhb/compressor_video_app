@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        tools:context=".activities.CompressActivity">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Compress Video"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:layout_marginTop="32dp"
+            ></TextView>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:layout_marginTop="32dp"
+            android:fitsSystemWindows="true">
+            <VideoView
+                android:id="@+id/vvOriginal"
+                android:layout_width="match_parent"
+                android:layout_height="250dp" />
+        </RelativeLayout>
+        <ProgressBar
+            android:id="@+id/pbIsCompressed"
+            android:layout_height="64dp"
+            android:layout_width="64dp"
+            android:layout_marginTop="16dp"
+            android:visibility="invisible"/>
+        <Button
+            android:id="@+id/btnUpVideo"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Upload"/>
+        <Button
+            android:id="@+id/btnCompress"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Compress"/>
+        <Button
+            android:id="@+id/btnViewCompressedList"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="View List"/>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+

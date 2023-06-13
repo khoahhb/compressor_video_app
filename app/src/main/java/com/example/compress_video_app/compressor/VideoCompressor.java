@@ -1,4 +1,4 @@
-package com.example.compress_video_app;
+package com.example.compress_video_app.compressor;
 
 import android.content.Context;
 import android.media.MediaCodec;
@@ -6,9 +6,13 @@ import android.media.MediaCodecInfo;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.util.Log;
+
+import androidx.core.content.FileProvider;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +24,9 @@ public class VideoCompressor {
     private static final String TAG = "VideoCompressor";
 
     private final File dir;
+
+    private File outputDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+
     private final Context mContext;
 
     private static final int TIMEOUT_USE = 0;
@@ -54,6 +61,7 @@ public class VideoCompressor {
     private MediaCodec mEncoder = null;
 
     private String mInputName;
+    private String realName;
 
     private int mTrackIndex = -1;
     private long mLastSampleTime = 0;
@@ -94,42 +102,42 @@ public class VideoCompressor {
         mBitRate = mHeight*mWidth*2;
         mFrameRate = 30;
         mIFrameInterval = 10;
-        setOutput("normal");
+        setOutput("normal-264-");
     }
     public void setProfileH264Medium() throws IOException {
         mMime = MediaHelper.MIME_TYPE_AVC;
         mBitRate = mHeight*mWidth;
         mFrameRate = 30;
         mIFrameInterval = 10;
-        setOutput("medium");
+        setOutput("medium-264-");
     }
     public void setProfileH264High() throws IOException {
         mMime = MediaHelper.MIME_TYPE_AVC;
         mBitRate = (int) (mHeight*mWidth*0.5);
         mFrameRate = 30;
         mIFrameInterval = 10;
-        setOutput("high");
+        setOutput("high-264-");
     }
     public void setProfileH265Normal() throws IOException {
         mMime = MediaHelper.MIME_TYPE_HEVC;
         mBitRate = mHeight*mWidth*2;
         mFrameRate = 30;
         mIFrameInterval = 10;
-        setOutput("normal");
+        setOutput("normal-265-");
     }
     public void setProfileH265Medium() throws IOException {
         mMime = MediaHelper.MIME_TYPE_HEVC;
         mBitRate = mHeight*mWidth;
         mFrameRate = 30;
         mIFrameInterval = 10;
-        setOutput("medium");
+        setOutput("medium-265-");
     }
     public void setProfileH265High() throws IOException {
         mMime = MediaHelper.MIME_TYPE_HEVC;
         mBitRate = (int) (mHeight*mWidth*0.5);
         mFrameRate = 30;
         mIFrameInterval = 10;
-        setOutput("high");
+        setOutput("high-265-");
     }
 
     public void setInput(InputVideo video ) {
@@ -139,7 +147,7 @@ public class VideoCompressor {
 
     private void setOutput( String type ) throws IOException {
 
-        String realName = type + "-" + mInputName + ".mp4";
+        realName = type + "-" + mInputName + ".mp4";
 
         File outputTempFile = new File(dir, "temp-" + realName);
         if (!outputTempFile.exists()) {
@@ -147,7 +155,7 @@ public class VideoCompressor {
         }
         mOutputTempUri = Uri.fromFile(outputTempFile);
 
-        File outputRealFile = new File(dir, realName);
+        File outputRealFile = new File(outputDir, realName);
         if (!outputRealFile.exists()) {
             outputRealFile.createNewFile();
         }
@@ -468,7 +476,7 @@ public class VideoCompressor {
             videoExtractor.selectTrack( trackIndexVideo );
 
             MediaFormat videoFormat = videoExtractor.getTrackFormat( trackIndexVideo );
-            Log.d(TAG+"test", "muxAudioAndVideo: " + videoFormat);
+//            Log.d(TAG+"test", "muxAudioAndVideo: " + videoFormat);
 
 
             //Audio Extractor
@@ -510,7 +518,7 @@ public class VideoCompressor {
 
                 if (videoBufferInfo.size < 0 || audioBufferInfo.size < 0)
                 {
-                    Log.d(TAG, "saw input EOS.");
+//                    Log.d(TAG, "saw input EOS.");
                     sawEOS = true;
                     videoBufferInfo.size = 0;
 
@@ -547,12 +555,16 @@ public class VideoCompressor {
                 }
             }
 
+
             File temp = new File(mOutputTempUri.getPath());
             if(temp.exists())
                 temp.delete();
 
             muxer.stop();
             muxer.release();
+
+            MediaScannerConnection.scanFile(mContext, new String[]{mOutputRealUri.getPath()}, null, null);
+
 
         }catch (Exception e){
             Log.e("TestMuxAudio", "Problem: " + e);

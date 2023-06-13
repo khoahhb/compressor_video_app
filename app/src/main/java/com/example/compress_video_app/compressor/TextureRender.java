@@ -1,4 +1,4 @@
-package com.example.compress_video_app;
+package com.example.compress_video_app.compressor;
 
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;

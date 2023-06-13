@@ -1,4 +1,4 @@
-package com.example.compress_video_app;
+package com.example.compress_video_app.compressor;
 
 import android.net.Uri;
 
