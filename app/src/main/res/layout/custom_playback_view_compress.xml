@@ -27,6 +27,7 @@
                 android:ellipsize="end"
                 android:maxLines="2"
                 android:text="this is title of video"
+                android:paddingLeft="16dp"
                 android:layout_gravity="center_vertical"
                 android:textColor="@android:color/white"
                 android:textSize="18sp" />
