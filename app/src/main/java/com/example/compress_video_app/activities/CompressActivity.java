@@ -1,7 +1,6 @@
 package com.example.compress_video_app.activities;
 
 import android.Manifest;
-
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -66,8 +65,8 @@ public class CompressActivity extends AppCompatActivity {
     private SimpleExoPlayer playerOrigin;
     private SimpleExoPlayer playerCompress;
 
-    private ImageView scalingOrigin, videoListOrigin,exo_rotateOrigin,video_moreOrigin;
-    private ImageView scalingCompress, videoListCompress,exo_rotateCompress,video_moreCompress;
+    private ImageView scalingOrigin, videoListOrigin, exo_rotateOrigin, video_moreOrigin;
+    private ImageView scalingCompress, videoListCompress, exo_rotateCompress, video_moreCompress;
 
     private TextView video_titleOrigin;
     private TextView video_titleCompress;
@@ -91,7 +90,6 @@ public class CompressActivity extends AppCompatActivity {
     private Button btnCompress;
     private ProgressBar pbIsCompressed;
     private Uri videoInputUri;
-    private Uri videoOutputUri;
     private final ActivityResultLauncher<Intent> selectVideo = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -106,17 +104,16 @@ public class CompressActivity extends AppCompatActivity {
                 }
             }
     );
-
+    private Uri videoOutputUri;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case REQUEST_PERMISSION_CODE:
-                if (grantResults.length > 0 &&
-                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    uploadVideo();
-                }
+        if (requestCode == REQUEST_PERMISSION_CODE) {
+            if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                uploadVideo();
+            }
         }
     }
 
@@ -174,12 +171,12 @@ public class CompressActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 ViewGroup.LayoutParams layoutParams = playerViewOrigin.getLayoutParams();
-                if (layoutParams.height ==ViewGroup.LayoutParams.MATCH_PARENT  ){
+                if (layoutParams.height == ViewGroup.LayoutParams.MATCH_PARENT) {
                     int desiredHeightDp = 240;
                     int desiredHeightPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, desiredHeightDp, getResources().getDisplayMetrics());
                     layoutParams.height = desiredHeightPx;
                     playerViewOrigin.setLayoutParams(layoutParams);
-                }else {
+                } else {
                     layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
                     playerViewOrigin.setLayoutParams(layoutParams);
                 }
@@ -190,12 +187,12 @@ public class CompressActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 ViewGroup.LayoutParams layoutParams = playerViewCompress.getLayoutParams();
-                if (layoutParams.height ==ViewGroup.LayoutParams.MATCH_PARENT  ){
+                if (layoutParams.height == ViewGroup.LayoutParams.MATCH_PARENT) {
                     int desiredHeightDp = 240;
                     int desiredHeightPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, desiredHeightDp, getResources().getDisplayMetrics());
                     layoutParams.height = desiredHeightPx;
                     playerViewCompress.setLayoutParams(layoutParams);
-                }else {
+                } else {
                     layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
                     playerViewCompress.setLayoutParams(layoutParams);
                 }
@@ -227,7 +224,7 @@ public class CompressActivity extends AppCompatActivity {
         video_moreOrigin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(videoInputUri!= null){
+                if (videoInputUri != null) {
 
                     String realPath = getRealPathFromURI(CompressActivity.this, videoInputUri);
 
@@ -238,22 +235,22 @@ public class CompressActivity extends AppCompatActivity {
                     android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(CompressActivity.this);
                     alertDialog.setTitle("Properties");
 
-                    String one = "File: " + video.getFormatFileName() ;
+                    String one = "File: " + video.getFormatFileName();
 
                     String two = "Size: " + video.getFormatSize(CompressActivity.this);
 
-                    String three = "Resolution: " + video.getFormatResolution() ;
+                    String three = "Resolution: " + video.getFormatResolution();
 
                     String four = "Duration: " + video.getFormatDuration();
 
                     String five = "Format: " + video.getFormat();
 
-                    String six = "Codec: " + video.getFormatCodec() ;
+                    String six = "Codec: " + video.getFormatCodec();
                     String seven = "Bitrate: " + video.getFormatBitrate();
-                    String eight = "Frame rate: " + video.getFormatFrameRate() ;
+                    String eight = "Frame rate: " + video.getFormatFrameRate();
 
                     alertDialog.setMessage(one + "\n\n" + two + "\n\n" + three + "\n\n" + four +
-                            "\n\n" + five + "\n\n" + six+ "\n\n" + seven+ "\n\n" + eight);
+                            "\n\n" + five + "\n\n" + six + "\n\n" + seven + "\n\n" + eight);
                     alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -268,7 +265,7 @@ public class CompressActivity extends AppCompatActivity {
         video_moreCompress.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(videoOutputUri!= null){
+                if (videoOutputUri != null) {
 
                     String realPath = videoOutputUri.getPath();
 
@@ -279,22 +276,22 @@ public class CompressActivity extends AppCompatActivity {
                     android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(CompressActivity.this);
                     alertDialog.setTitle("Properties");
 
-                    String one = "File: " + video.getFormatFileName() ;
+                    String one = "File: " + video.getFormatFileName();
 
                     String two = "Size: " + video.getFormatSize(CompressActivity.this);
 
-                    String three = "Resolution: " + video.getFormatResolution() ;
+                    String three = "Resolution: " + video.getFormatResolution();
 
                     String four = "Duration: " + video.getFormatDuration();
 
                     String five = "Format: " + video.getFormat();
 
-                    String six = "Codec: " + video.getFormatCodec() ;
+                    String six = "Codec: " + video.getFormatCodec();
                     String seven = "Bitrate: " + video.getFormatBitrate();
-                    String eight = "Frame rate: " + video.getFormatFrameRate() ;
+                    String eight = "Frame rate: " + video.getFormatFrameRate();
 
                     alertDialog.setMessage(one + "\n\n" + two + "\n\n" + three + "\n\n" + four +
-                            "\n\n" + five + "\n\n" + six+ "\n\n" + seven+ "\n\n" + eight);
+                            "\n\n" + five + "\n\n" + six + "\n\n" + seven + "\n\n" + eight);
                     alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -309,14 +306,12 @@ public class CompressActivity extends AppCompatActivity {
         playerViewOrigin.setOnTouchListener(new OnSwipeTouchListener(this) {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                switch (motionEvent.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        playerViewOrigin.showController();
-                        break;
-
+                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                    playerViewOrigin.showController();
                 }
                 return super.onTouch(view, motionEvent);
             }
+
             @Override
             public void onSingleTouch() {
                 super.onSingleTouch();
@@ -333,14 +328,12 @@ public class CompressActivity extends AppCompatActivity {
         playerViewCompress.setOnTouchListener(new OnSwipeTouchListener(this) {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                switch (motionEvent.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        playerViewCompress.showController();
-                        break;
-
+                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                    playerViewCompress.showController();
                 }
                 return super.onTouch(view, motionEvent);
             }
+
             @Override
             public void onSingleTouch() {
                 super.onSingleTouch();
@@ -353,9 +346,6 @@ public class CompressActivity extends AppCompatActivity {
                 }
             }
         });
-
-
-
 
 
         btnUpVideo.setOnClickListener(new View.OnClickListener() {
@@ -416,7 +406,7 @@ public class CompressActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if(playerCompress != null && playerOrigin != null){
+        if (playerCompress != null && playerOrigin != null) {
             playerOrigin.setPlayWhenReady(false);
             playerOrigin.getPlaybackState();
             playerCompress.setPlayWhenReady(false);
@@ -437,11 +427,11 @@ public class CompressActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(playerCompress != null){
+        if (playerCompress != null) {
             playerCompress.setPlayWhenReady(true);
             playerCompress.getPlaybackState();
         }
-        if(playerOrigin != null){
+        if (playerOrigin != null) {
             playerOrigin.setPlayWhenReady(true);
             playerOrigin.getPlaybackState();
         }
@@ -452,7 +442,7 @@ public class CompressActivity extends AppCompatActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        if(playerOrigin != null && playerCompress != null){
+        if (playerOrigin != null && playerCompress != null) {
             playerOrigin.setPlayWhenReady(true);
             playerOrigin.getPlaybackState();
             playerCompress.setPlayWhenReady(true);
@@ -563,26 +553,28 @@ public class CompressActivity extends AppCompatActivity {
         playerCompress.addListener(new Player.EventListener() {
             @Override
             public void onPlayerError(ExoPlaybackException error) {
-                Toast.makeText(CompressActivity.this, "Video Playing Error", Toast.LENGTH_SHORT).show();
                 Log.e("ProblemNeMa", error.getMessage());
             }
         });
         playerCompress.setPlayWhenReady(true);
     }
+
     private void compressVideo() {
 
-        if(videoInputUri == null){
+        if (videoInputUri == null) {
             tilCodec.setError("Select input video");
-        }else{
+        } else {
             String inputPath;
             inputPath = getRealPathFromURI(CompressActivity.this, videoInputUri);
 
-            String codec =  tieCodec.getText().toString().trim();
+            String codec = tieCodec.getText().toString().trim();
 
-            if(codec.isEmpty()){
+            if (codec.isEmpty()) {
                 tilCodec.setError("Choose profile");
-            }else {
+            } else {
                 pbIsCompressed.setVisibility(View.VISIBLE);
+                playerViewCompress.setVisibility(View.GONE);
+
                 File inputFile = new File(inputPath);
 
                 try {
@@ -615,7 +607,7 @@ public class CompressActivity extends AppCompatActivity {
                     });
                     compressor.setInput(new HandleVideo(Uri.fromFile(inputFile)));
 
-                    if(codec.equals("H264-Normal"))
+                    if (codec.equals("H264-Normal"))
                         compressor.setProfileH264Normal();
                     else if (codec.equals("H264-Medium"))
                         compressor.setProfileH264Medium();
@@ -627,6 +619,7 @@ public class CompressActivity extends AppCompatActivity {
                         compressor.setProfileH265Medium();
                     else if (codec.equals("H265-High"))
                         compressor.setProfileH265High();
+
                     compressor.start();
 
                 } catch (Throwable e) {

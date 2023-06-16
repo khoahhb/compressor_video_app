@@ -24,11 +24,11 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final ArrayList<String> allFolderList = new ArrayList<>();
     RecyclerView recyclerView;
     VideoFoldersAdapter adapter;
     SwipeRefreshLayout swipeRefreshLayout;
     private ArrayList<MediaFiles> mediaFiles = new ArrayList<>();
-    private final ArrayList<String> allFolderList = new ArrayList<>();
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override

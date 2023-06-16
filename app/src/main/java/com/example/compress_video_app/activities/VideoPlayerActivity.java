@@ -82,6 +82,8 @@ import java.util.ArrayList;
 public class VideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final int MINIMUM_DISTANCE = 100;
+    //horizontal recyclerview variables
+    private final ArrayList<IconModel> iconModelArrayList = new ArrayList<>();
     ArrayList<MediaFiles> mVideoFiles = new ArrayList<>();
     PlayerView playerView;
     SimpleExoPlayer player;
@@ -96,7 +98,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     PlaybackIconsAdapter playbackIconsAdapter;
     RecyclerView recyclerViewIcons;
     boolean expand = false;
-//    View nightMode;
+    //    View nightMode;
     boolean dark = false;
     boolean mute = false;
     PlaybackParameters parameters;
@@ -125,8 +127,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     boolean double_tap = false;
     RelativeLayout double_tap_playpause;
     private ControlsMode controlsMode;
-    //horizontal recyclerview variables
-    private final ArrayList<IconModel> iconModelArrayList = new ArrayList<>();
     //swipe and zoom variables
     private int device_height, device_width, brightness, media_volume;
     private float baseX, baseY;
@@ -877,17 +877,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             player.release();
             finish();
         }
-    }    View.OnClickListener firstListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
-            player.setVideoScalingMode(C.VIDEO_SCALING_MODE_DEFAULT);
-            scaling.setImageResource(R.drawable.fullscreen);
-
-            Toast.makeText(VideoPlayerActivity.this, "Full Screen", Toast.LENGTH_SHORT).show();
-            scaling.setOnClickListener(secondListener);
-        }
-    };
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -903,30 +893,21 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
                 }
             }
         }
-    }    View.OnClickListener secondListener = new View.OnClickListener() {
+    }    View.OnClickListener firstListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_ZOOM);
+            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
             player.setVideoScalingMode(C.VIDEO_SCALING_MODE_DEFAULT);
-            scaling.setImageResource(R.drawable.zoom);
+            scaling.setImageResource(R.drawable.fullscreen);
 
-            Toast.makeText(VideoPlayerActivity.this, "Zoom", Toast.LENGTH_SHORT).show();
-            scaling.setOnClickListener(thirdListener);
+            Toast.makeText(VideoPlayerActivity.this, "Full Screen", Toast.LENGTH_SHORT).show();
+            scaling.setOnClickListener(secondListener);
         }
     };
+
     public enum ControlsMode {
         LOCK, FULLSCREEN
-    }    View.OnClickListener thirdListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
-            player.setVideoScalingMode(C.VIDEO_SCALING_MODE_DEFAULT);
-            scaling.setImageResource(R.drawable.fit);
-
-            Toast.makeText(VideoPlayerActivity.this, "Fit", Toast.LENGTH_SHORT).show();
-            scaling.setOnClickListener(firstListener);
-        }
-    };
+    }
 
     private class ScaleDetector extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
@@ -953,10 +934,31 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             zoomContainer.setVisibility(View.GONE);
             super.onScaleEnd(detector);
         }
-    }
+    }    View.OnClickListener secondListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_ZOOM);
+            player.setVideoScalingMode(C.VIDEO_SCALING_MODE_DEFAULT);
+            scaling.setImageResource(R.drawable.zoom);
+
+            Toast.makeText(VideoPlayerActivity.this, "Zoom", Toast.LENGTH_SHORT).show();
+            scaling.setOnClickListener(thirdListener);
+        }
+    };
 
 
 
+    View.OnClickListener thirdListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+            player.setVideoScalingMode(C.VIDEO_SCALING_MODE_DEFAULT);
+            scaling.setImageResource(R.drawable.fit);
+
+            Toast.makeText(VideoPlayerActivity.this, "Fit", Toast.LENGTH_SHORT).show();
+            scaling.setOnClickListener(firstListener);
+        }
+    };
 
 
 

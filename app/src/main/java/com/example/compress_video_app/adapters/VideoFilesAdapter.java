@@ -47,16 +47,15 @@ import com.example.compress_video_app.models.Utility;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class VideoFilesAdapter extends RecyclerView.Adapter<VideoFilesAdapter.ViewHolder> {
 
     private static final String TAG = "VideoFilesAdapter";
-    BottomSheetDialog bottomSheetDialog;
-    private ArrayList<MediaFiles> videoList;
     private final Context context;
     private final int viewType;
+    BottomSheetDialog bottomSheetDialog;
+    private ArrayList<MediaFiles> videoList;
 
     public VideoFilesAdapter(ArrayList<MediaFiles> videoList, Context context, int viewType) {
         this.videoList = videoList;

@@ -39,6 +39,7 @@ public class MediaHelper {
     public static int GetRotation(Uri uri) {
         return GetMediaMetadataRetrieverPropertyInteger(uri, MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION, 0);
     }
+
     public static String GetCodec(Uri uri) {
         return GetMediaFormatPropertyString(uri, MediaFormat.KEY_MIME, "");
     }
@@ -130,6 +131,7 @@ public class MediaHelper {
         }
         return null;
     }
+
     public static int getVideoTrackIndex(MediaExtractor extractor) {
         int index = -1;
         for (int trackIndex = 0; trackIndex < extractor.getTrackCount(); trackIndex++) {
@@ -144,6 +146,7 @@ public class MediaHelper {
         }
         return index;
     }
+
     public static int getAudioTrackIndex(MediaExtractor extractor) {
 
         for (int trackIndex = 0; trackIndex < extractor.getTrackCount(); trackIndex++) {

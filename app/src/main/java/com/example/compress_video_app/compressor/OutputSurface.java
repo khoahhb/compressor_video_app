@@ -25,13 +25,13 @@ class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
     private static final String TAG = "OutputSurface";
     private static final boolean VERBOSE = false;
     private static final int EGL_OPENGL_ES2_BIT = 4;
+    private final Object mFrameSyncObject = new Object(); // guards mFrameAvailable
     private EGL10 mEGL;
     private EGLDisplay mEGLDisplay;
     private EGLContext mEGLContext;
     private EGLSurface mEGLSurface;
     private SurfaceTexture mSurfaceTexture;
     private Surface mSurface;
-    private final Object mFrameSyncObject = new Object(); // guards mFrameAvailable
     private boolean mFrameAvailable;
     private TextureRender mTextureRender;
     private int mRotation = 0;
