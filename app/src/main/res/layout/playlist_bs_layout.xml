@@ -5,17 +5,18 @@
     android:background="#232020">
 
     <TextView
+        android:id="@+id/playlist_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
         android:layout_margin="5dp"
-        android:textColor="@android:color/white"
+        android:gravity="center_horizontal"
         android:text="Folder Name"
-        android:id="@+id/playlist_name"
-        android:textSize="18sp"/>
+        android:textColor="@android:color/white"
+        android:textSize="18sp" />
+
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/playlist_rv"
         android:layout_width="match_parent"
         android:layout_height="350dp"
-        android:layout_below="@+id/playlist_name"
-        android:id="@+id/playlist_rv"/>
+        android:layout_below="@+id/playlist_name" />
 </RelativeLayout>

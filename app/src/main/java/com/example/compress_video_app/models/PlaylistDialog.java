@@ -2,6 +2,7 @@ package com.example.compress_video_app.models;
 
 import static com.example.compress_video_app.activities.VideoFilesActivity.MY_PREF;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -50,11 +51,11 @@ public class PlaylistDialog extends BottomSheetDialogFragment {
         folder = view.findViewById(R.id.playlist_name);
 
         SharedPreferences preferences = this.getActivity().getSharedPreferences(MY_PREF, Context.MODE_PRIVATE);
-        String folderName = preferences.getString("playlistFOlderName","abc");
+        String folderName = preferences.getString("playlistFOlderName", "abc");
         folder.setText(folderName);
 
         arrayList = fetchMedia(folderName);
-        videoFilesAdapter = new VideoFilesAdapter(arrayList, getContext(),1);
+        videoFilesAdapter = new VideoFilesAdapter(arrayList, getContext(), 1);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(videoFilesAdapter);
@@ -68,23 +69,26 @@ public class PlaylistDialog extends BottomSheetDialogFragment {
         ArrayList<MediaFiles> videoFiles = new ArrayList<>();
         Uri uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
 
-        String selection = MediaStore.Video.Media.DATA+" like?";
-        String[] selectionArg = new String[]{"%"+folderName+"%"};
+        String selection = MediaStore.Video.Media.DATA + " like?";
+        String[] selectionArg = new String[]{"%" + folderName + "%"};
         Cursor cursor = getContext().getContentResolver().query(uri, null,
                 selection, selectionArg, null);
         if (cursor != null && cursor.moveToNext()) {
             do {
-                String id = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media._ID));
-                String title = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.TITLE));
-                String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME));
-                String size = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.SIZE));
-                String duration = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DURATION));
-                String path = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA));
-                String dateAdded = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATE_ADDED));
+                @SuppressLint("Range") String id = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media._ID));
+                @SuppressLint("Range") String title = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.TITLE));
+                @SuppressLint("Range") String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME));
+                @SuppressLint("Range") String size = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.SIZE));
+                @SuppressLint("Range") String duration = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DURATION));
+                @SuppressLint("Range") String path = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA));
+                @SuppressLint("Range") String dateAdded = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATE_ADDED));
+                @SuppressLint("Range") String bitrate = "" + cursor.getInt(cursor.getColumnIndex(MediaStore.Video.Media.BITRATE));
+//                String bitrate = "2000000";
+
                 MediaFiles mediaFiles = new MediaFiles(id, title, displayName, size, duration, path,
-                        dateAdded);
+                        dateAdded, bitrate);
                 videoFiles.add(mediaFiles);
-            }while (cursor.moveToNext());
+            } while (cursor.moveToNext());
         }
         return videoFiles;
     }

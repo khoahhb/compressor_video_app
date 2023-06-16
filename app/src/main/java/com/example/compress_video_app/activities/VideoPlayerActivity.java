@@ -49,15 +49,15 @@ import com.developer.filepicker.controller.DialogSelectionListener;
 import com.developer.filepicker.model.DialogConfigs;
 import com.developer.filepicker.model.DialogProperties;
 import com.developer.filepicker.view.FilePickerDialog;
+import com.example.compress_video_app.R;
+import com.example.compress_video_app.adapters.PlaybackIconsAdapter;
+import com.example.compress_video_app.adapters.VideoFilesAdapter;
 import com.example.compress_video_app.models.BrightnessDialog;
 import com.example.compress_video_app.models.IconModel;
 import com.example.compress_video_app.models.MediaFiles;
 import com.example.compress_video_app.models.OnSwipeTouchListener;
-import com.example.compress_video_app.adapters.PlaybackIconsAdapter;
 import com.example.compress_video_app.models.PlaylistDialog;
-import com.example.compress_video_app.R;
 import com.example.compress_video_app.models.Utility;
-import com.example.compress_video_app.adapters.VideoFilesAdapter;
 import com.example.compress_video_app.models.VolumeDialog;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -81,29 +81,22 @@ import java.util.ArrayList;
 
 public class VideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
 
+    public static final int MINIMUM_DISTANCE = 100;
     ArrayList<MediaFiles> mVideoFiles = new ArrayList<>();
     PlayerView playerView;
     SimpleExoPlayer player;
     int position;
     String videoTitle;
     TextView title;
-    private ControlsMode controlsMode;
-
-    public enum ControlsMode {
-        LOCK, FULLSCREEN
-    }
-
     ImageView videoBack, lock, unlock, scaling, videoList, videoMore;
     VideoFilesAdapter videoFilesAdapter;
     RelativeLayout root;
     ConcatenatingMediaSource concatenatingMediaSource;
     ImageView nextButton, previousButton;
-    //horizontal recyclerview variables
-    private ArrayList<IconModel> iconModelArrayList = new ArrayList<>();
     PlaybackIconsAdapter playbackIconsAdapter;
     RecyclerView recyclerViewIcons;
     boolean expand = false;
-    View nightMode;
+//    View nightMode;
     boolean dark = false;
     boolean mute = false;
     PlaybackParameters parameters;
@@ -114,34 +107,33 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     PictureInPictureParams.Builder pictureInPicture;
     boolean isCrossChecked;
     FrameLayout eqContainer;
-    //horizontal recyclerview variables
-
-    //swipe and zoom variables
-    private int device_height, device_width, brightness, media_volume;
     boolean start = false;
     boolean left, right;
-    private float baseX, baseY;
+    //horizontal recyclerview variables
     boolean swipe_move = false;
-    private long diffX, diffY;
-    public static final int MINIMUM_DISTANCE = 100;
     boolean success = false;
     TextView vol_text, brt_text, total_duration;
     ProgressBar vol_progress, brt_progress;
     LinearLayout vol_progress_container, vol_text_container, brt_progress_container, brt_text_container;
     ImageView vol_icon, brt_icon;
     AudioManager audioManager;
-    private ContentResolver contentResolver;
-    private Window window;
     boolean singleTap = false;
-
     RelativeLayout zoomLayout;
     RelativeLayout zoomContainer;
     TextView zoom_perc;
     ScaleGestureDetector scaleGestureDetector;
-    private float scale_factor = 1.0f;
     boolean double_tap = false;
     RelativeLayout double_tap_playpause;
+    private ControlsMode controlsMode;
+    //horizontal recyclerview variables
+    private final ArrayList<IconModel> iconModelArrayList = new ArrayList<>();
     //swipe and zoom variables
+    private int device_height, device_width, brightness, media_volume;
+    private float baseX, baseY;
+    private long diffX, diffY;
+    private ContentResolver contentResolver;
+    private Window window;
+    private float scale_factor = 1.0f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -312,6 +304,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
         horizontalIconList();
 
     }
+    //swipe and zoom variables
 
     private void horizontalIconList() {
         iconModelArrayList.add(new IconModel(R.drawable.ic_right, ""));
@@ -354,17 +347,17 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
                 }
                 if (position == 1) {
                     //night mode
-                    if (dark) {
-                        nightMode.setVisibility(View.GONE);
-                        iconModelArrayList.set(position, new IconModel(R.drawable.ic_night_mode, "Night"));
-                        playbackIconsAdapter.notifyDataSetChanged();
-                        dark = false;
-                    } else {
-                        nightMode.setVisibility(View.VISIBLE);
-                        iconModelArrayList.set(position, new IconModel(R.drawable.ic_night_mode, "Day"));
-                        playbackIconsAdapter.notifyDataSetChanged();
-                        dark = true;
-                    }
+//                    if (dark) {
+//                        nightMode.setVisibility(View.GONE);
+//                        iconModelArrayList.set(position, new IconModel(R.drawable.ic_night_mode, "Night"));
+//                        playbackIconsAdapter.notifyDataSetChanged();
+//                        dark = false;
+//                    } else {
+//                        nightMode.setVisibility(View.VISIBLE);
+//                        iconModelArrayList.set(position, new IconModel(R.drawable.ic_night_mode, "Day"));
+//                        playbackIconsAdapter.notifyDataSetChanged();
+//                        dark = true;
+//                    }
                 }
                 if (position == 2) {
                     //popup
@@ -497,7 +490,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
                         public void onSelectedFilePaths(String[] files) {
                             for (String path : files) {
                                 File file = new File(path);
-                                uriSubtitle = Uri.parse(file.getAbsolutePath().toString());
+                                uriSubtitle = Uri.parse(file.getAbsolutePath());
                             }
                             playVideoSubtitle(uriSubtitle);
                         }
@@ -518,7 +511,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
         unlock = findViewById(R.id.unlock);
         scaling = findViewById(R.id.scaling);
         root = findViewById(R.id.root_layout);
-        nightMode = findViewById(R.id.night_mode);
+//        nightMode = findViewById(R.id.night_mode);
         videoList = findViewById(R.id.video_list);
         videoMore = findViewById(R.id.video_more);
         recyclerViewIcons = findViewById(R.id.recyclerview_icon);
@@ -563,7 +556,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             pictureInPicture = new PictureInPictureParams.Builder();
         }
     }
-
 
     private void playVideo() {
         String path = mVideoFiles.get(position).getPath();
@@ -715,7 +707,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
 
         int vId = v.getId();
 
-        if(vId == R.id.video_back){
+        if (vId == R.id.video_back) {
             if (player != null) {
                 player.release();
             }
@@ -723,17 +715,17 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
         } else if (vId == R.id.video_list) {
             PlaylistDialog playlistDialog = new PlaylistDialog(mVideoFiles, videoFilesAdapter);
             playlistDialog.show(getSupportFragmentManager(), playlistDialog.getTag());
-        }else if (vId == R.id.lock) {
+        } else if (vId == R.id.lock) {
             controlsMode = ControlsMode.FULLSCREEN;
             root.setVisibility(View.VISIBLE);
             lock.setVisibility(View.INVISIBLE);
             Toast.makeText(this, "unLocked", Toast.LENGTH_SHORT).show();
-        }else if (vId == R.id.unlock) {
+        } else if (vId == R.id.unlock) {
             controlsMode = ControlsMode.LOCK;
             root.setVisibility(View.INVISIBLE);
             lock.setVisibility(View.VISIBLE);
             Toast.makeText(this, "Locked", Toast.LENGTH_SHORT).show();
-        }else if (vId == R.id.exo_next) {
+        } else if (vId == R.id.exo_next) {
             try {
                 player.stop();
                 position++;
@@ -743,7 +735,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
                 Toast.makeText(this, "no Next Video", Toast.LENGTH_SHORT).show();
                 finish();
             }
-        }else if (vId == R.id.exo_prev) {
+        } else if (vId == R.id.exo_prev) {
             try {
                 player.stop();
                 position--;
@@ -753,7 +745,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
                 Toast.makeText(this, "no Previous Video", Toast.LENGTH_SHORT).show();
                 finish();
             }
-        }else if (vId == R.id.video_more) {
+        } else if (vId == R.id.video_more) {
             PopupMenu popupMenu = new PopupMenu(VideoPlayerActivity.this, videoMore);
             popupMenu.inflate(R.menu.player_menu);
             popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -762,18 +754,18 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
                 public boolean onMenuItemClick(MenuItem menuItem) {
                     int id = menuItem.getItemId();
 
-                    if(id == R.id.next){
+                    if (id == R.id.next) {
                         nextButton.performClick();
                         return true;
                     } else if (id == R.id.send) {
                         Uri uri = Uri.parse(mVideoFiles.get(position).getPath());
-                        Log.e("TestMetMoi",mVideoFiles.get(position).getPath() );
+                        Log.e("TestMetMoi", mVideoFiles.get(position).getPath());
                         Intent shareIntent = new Intent(Intent.ACTION_SEND);
                         shareIntent.setType("video/*");
                         shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
                         startActivity(Intent.createChooser(shareIntent, "Share Video via"));
                         return true;
-                    }else if (id == R.id.properties) {
+                    } else if (id == R.id.properties) {
                         double milliSeconds = Double.parseDouble(mVideoFiles.get(position).getDuration());
                         android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(VideoPlayerActivity.this);
                         alertDialog.setTitle("Properties");
@@ -810,7 +802,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
                         });
                         alertDialog.show();
                         return true;
-                    }else if (id == R.id.delete) {
+                    } else if (id == R.id.delete) {
                         android.app.AlertDialog.Builder alertDialogDelete = new android.app.AlertDialog.Builder(VideoPlayerActivity.this);
                         alertDialogDelete.setTitle("Delete");
                         alertDialogDelete.setMessage("Do you want to delete this video");
@@ -840,7 +832,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
                         });
                         alertDialogDelete.show();
                         return true;
-                    }else if (id == R.id.subtitle) {
+                    } else if (id == R.id.subtitle) {
                         dialogProperties.selection_mode = DialogConfigs.SINGLE_MODE;
                         dialogProperties.extensions = new String[]{".srt"};
                         dialogProperties.root = new File("/storage/emulated/0");
@@ -851,7 +843,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
                             public void onSelectedFilePaths(String[] files) {
                                 for (String path : files) {
                                     File file = new File(path);
-                                    uriSubtitle = Uri.parse(file.getAbsolutePath().toString());
+                                    uriSubtitle = Uri.parse(file.getAbsolutePath());
                                 }
                                 playVideoSubtitle(uriSubtitle);
                             }
@@ -864,40 +856,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             popupMenu.show();
         }
     }
-
-    View.OnClickListener firstListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
-            player.setVideoScalingMode(C.VIDEO_SCALING_MODE_DEFAULT);
-            scaling.setImageResource(R.drawable.fullscreen);
-
-            Toast.makeText(VideoPlayerActivity.this, "Full Screen", Toast.LENGTH_SHORT).show();
-            scaling.setOnClickListener(secondListener);
-        }
-    };
-    View.OnClickListener secondListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_ZOOM);
-            player.setVideoScalingMode(C.VIDEO_SCALING_MODE_DEFAULT);
-            scaling.setImageResource(R.drawable.zoom);
-
-            Toast.makeText(VideoPlayerActivity.this, "Zoom", Toast.LENGTH_SHORT).show();
-            scaling.setOnClickListener(thirdListener);
-        }
-    };
-    View.OnClickListener thirdListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
-            player.setVideoScalingMode(C.VIDEO_SCALING_MODE_DEFAULT);
-            scaling.setImageResource(R.drawable.fit);
-
-            Toast.makeText(VideoPlayerActivity.this, "Fit", Toast.LENGTH_SHORT).show();
-            scaling.setOnClickListener(firstListener);
-        }
-    };
 
     @Override
     public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode, Configuration newConfig) {
@@ -919,7 +877,17 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             player.release();
             finish();
         }
-    }
+    }    View.OnClickListener firstListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
+            player.setVideoScalingMode(C.VIDEO_SCALING_MODE_DEFAULT);
+            scaling.setImageResource(R.drawable.fullscreen);
+
+            Toast.makeText(VideoPlayerActivity.this, "Full Screen", Toast.LENGTH_SHORT).show();
+            scaling.setOnClickListener(secondListener);
+        }
+    };
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -935,7 +903,30 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
                 }
             }
         }
-    }
+    }    View.OnClickListener secondListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_ZOOM);
+            player.setVideoScalingMode(C.VIDEO_SCALING_MODE_DEFAULT);
+            scaling.setImageResource(R.drawable.zoom);
+
+            Toast.makeText(VideoPlayerActivity.this, "Zoom", Toast.LENGTH_SHORT).show();
+            scaling.setOnClickListener(thirdListener);
+        }
+    };
+    public enum ControlsMode {
+        LOCK, FULLSCREEN
+    }    View.OnClickListener thirdListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+            player.setVideoScalingMode(C.VIDEO_SCALING_MODE_DEFAULT);
+            scaling.setImageResource(R.drawable.fit);
+
+            Toast.makeText(VideoPlayerActivity.this, "Fit", Toast.LENGTH_SHORT).show();
+            scaling.setOnClickListener(firstListener);
+        }
+    };
 
     private class ScaleDetector extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
@@ -963,5 +954,11 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             super.onScaleEnd(detector);
         }
     }
+
+
+
+
+
+
 
 }

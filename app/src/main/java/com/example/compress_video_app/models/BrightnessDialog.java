@@ -27,6 +27,7 @@ public class BrightnessDialog extends AppCompatDialogFragment {
     private TextView bright_no;
     private ImageView cross;
     private SeekBar seekBar;
+
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {

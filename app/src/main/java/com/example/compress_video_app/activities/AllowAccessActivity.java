@@ -1,11 +1,5 @@
 package com.example.compress_video_app.activities;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -20,8 +14,11 @@ import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
 import com.example.compress_video_app.R;
-import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.Util;
 
 public class AllowAccessActivity extends AppCompatActivity {
@@ -29,8 +26,8 @@ public class AllowAccessActivity extends AppCompatActivity {
     public static final int STORAGE_PERMISSION = 1;
     public static final int STORAGE_PERMISSION_ABOVE10 = 123;
     public static final int REQUEST_PERMISSION_SETTING = 12;
-    private SharedPreferences preferences;
     Button allow_btn;
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +40,7 @@ public class AllowAccessActivity extends AppCompatActivity {
             if (Environment.isExternalStorageManager()) {
                 goToMain();
             }
-        }else if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        } else if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             goToMain();
         }
 
@@ -64,7 +61,7 @@ public class AllowAccessActivity extends AppCompatActivity {
                         e.printStackTrace();
                         Intent intent = new Intent();
                         intent.setAction(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                        startActivityForResult(intent,STORAGE_PERMISSION_ABOVE10);
+                        startActivityForResult(intent, STORAGE_PERMISSION_ABOVE10);
                     }
                 }
 
@@ -96,7 +93,7 @@ public class AllowAccessActivity extends AppCompatActivity {
                                         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                                         Uri uri = Uri.fromParts("package", getPackageName(), null);
                                         intent.setData(uri);
-                                        startActivityForResult(intent,REQUEST_PERMISSION_SETTING);
+                                        startActivityForResult(intent, REQUEST_PERMISSION_SETTING);
                                     }
                                 }).create().show();
                     } else {
@@ -118,8 +115,7 @@ public class AllowAccessActivity extends AppCompatActivity {
         }
     }
 
-    private void goToMain()
-    {
+    private void goToMain() {
         startActivity(new Intent(AllowAccessActivity.this, MainActivity.class));
         finish();
     }

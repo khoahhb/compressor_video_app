@@ -2,7 +2,7 @@ package com.example.compress_video_app.models;
 
 public abstract class Utility {
 
-    public static String timeConversion(Long millie){
+    public static String timeConversion(Long millie) {
         if (millie != null) {
             long seconds = (millie / 1000);
             long sec = seconds % 60;

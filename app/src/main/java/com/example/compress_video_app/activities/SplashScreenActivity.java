@@ -1,7 +1,5 @@
 package com.example.compress_video_app.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,12 +9,15 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.compress_video_app.R;
 
 public class SplashScreenActivity extends AppCompatActivity {
-    private ImageView imageView;
     public TextView textView;
+    private ImageView imageView;
     private Animation topAnim, bottomAnim;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,7 +42,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                 startActivity(new Intent(SplashScreenActivity.this, AllowAccessActivity.class));
                 finish();
             }
-        },3000);
+        }, 3000);
     }
 
 }

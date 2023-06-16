@@ -19,10 +19,11 @@ import com.example.compress_video_app.R;
 
 public class VolumeDialog extends AppCompatDialogFragment {
 
+    AudioManager audioManager;
     private ImageView cross;
     private TextView volume_no;
     private SeekBar seekBar;
-    AudioManager audioManager;
+
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -39,7 +40,7 @@ public class VolumeDialog extends AppCompatDialogFragment {
         audioManager = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
         seekBar.setMax(audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
         seekBar.setProgress(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
-        
+
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {

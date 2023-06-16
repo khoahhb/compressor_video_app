@@ -5,7 +5,6 @@ import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-import android.util.Log;
 
 import java.io.IOException;
 
@@ -17,7 +16,7 @@ public class MediaHelper {
 
     public static Bitmap GetThumbnailFromVideo(Uri uri, long timeMs) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(uri.toString());
+        retriever.setDataSource(uri.getPath());
         return retriever.getFrameAtTime(timeMs * 1000);
     }
 
@@ -39,6 +38,9 @@ public class MediaHelper {
 
     public static int GetRotation(Uri uri) {
         return GetMediaMetadataRetrieverPropertyInteger(uri, MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION, 0);
+    }
+    public static String GetCodec(Uri uri) {
+        return GetMediaFormatPropertyString(uri, MediaFormat.KEY_MIME, "");
     }
 
     public static int GetMediaMetadataRetrieverPropertyInteger(Uri uri, int key, int defaultValue) {
@@ -67,17 +69,51 @@ public class MediaHelper {
         MediaExtractor extractor = new MediaExtractor();
 
         try {
-            extractor.setDataSource(uri.toString());
+            extractor.setDataSource(uri.getPath());
         } catch (IOException e) {
             e.printStackTrace();
             return value;
         }
 
-        MediaFormat format = GetTrackFormat(extractor, MIME_TYPE_AVC);
+        int index = getVideoTrackIndex(extractor);
+
+        extractor.selectTrack(index);
+
+        MediaFormat format = extractor.getTrackFormat(index);
+
         extractor.release();
 
         if (format.containsKey(key)) {
             value = format.getInteger(key);
+        }
+
+        return value;
+
+    }
+
+    public static String GetMediaFormatPropertyString(Uri uri, String key, String defaultValue) {
+
+        String value = defaultValue;
+
+        MediaExtractor extractor = new MediaExtractor();
+
+        try {
+            extractor.setDataSource(uri.getPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return value;
+        }
+
+        int index = getVideoTrackIndex(extractor);
+
+        extractor.selectTrack(index);
+
+        MediaFormat format = extractor.getTrackFormat(index);
+
+        extractor.release();
+
+        if (format.containsKey(key)) {
+            value = format.getString(key);
         }
 
         return value;
@@ -93,6 +129,34 @@ public class MediaHelper {
             }
         }
         return null;
+    }
+    public static int getVideoTrackIndex(MediaExtractor extractor) {
+        int index = -1;
+        for (int trackIndex = 0; trackIndex < extractor.getTrackCount(); trackIndex++) {
+            MediaFormat format = extractor.getTrackFormat(trackIndex);
+
+            String mime = format.getString(MediaFormat.KEY_MIME);
+            if (mime != null) {
+                if (mime.startsWith("video/")) {
+                    index = trackIndex;
+                }
+            }
+        }
+        return index;
+    }
+    public static int getAudioTrackIndex(MediaExtractor extractor) {
+
+        for (int trackIndex = 0; trackIndex < extractor.getTrackCount(); trackIndex++) {
+            MediaFormat format = extractor.getTrackFormat(trackIndex);
+
+            String mime = format.getString(MediaFormat.KEY_MIME);
+            if (mime != null) {
+                if (mime.startsWith("audio/")) {
+                    return trackIndex;
+                }
+            }
+        }
+        return -1;
     }
 
 }

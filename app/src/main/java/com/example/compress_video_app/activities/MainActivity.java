@@ -1,14 +1,6 @@
 package com.example.compress_video_app.activities;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -17,19 +9,27 @@ import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.example.compress_video_app.models.MediaFiles;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.example.compress_video_app.R;
 import com.example.compress_video_app.adapters.VideoFoldersAdapter;
+import com.example.compress_video_app.models.MediaFiles;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ArrayList<MediaFiles> mediaFiles = new ArrayList<>();
-    private ArrayList<String> allFolderList = new ArrayList<>();
     RecyclerView recyclerView;
     VideoFoldersAdapter adapter;
     SwipeRefreshLayout swipeRefreshLayout;
+    private ArrayList<MediaFiles> mediaFiles = new ArrayList<>();
+    private final ArrayList<String> allFolderList = new ArrayList<>();
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,10 +60,11 @@ public class MainActivity extends AppCompatActivity {
         adapter = new VideoFoldersAdapter(mediaFiles, allFolderList, this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this,
-                RecyclerView.VERTICAL,false));
+                RecyclerView.VERTICAL, false));
         adapter.notifyDataSetChanged();
     }
-    public ArrayList<MediaFiles> fetchMedia(){
+
+    public ArrayList<MediaFiles> fetchMedia() {
         ArrayList<MediaFiles> mediaFilesArrayList = new ArrayList<>();
         Uri uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
 
@@ -78,8 +79,10 @@ public class MainActivity extends AppCompatActivity {
                 @SuppressLint("Range") String duration = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DURATION));
                 @SuppressLint("Range") String path = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA));
                 @SuppressLint("Range") String dateAdded = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATE_ADDED));
+                @SuppressLint("Range") String bitrate = "" + cursor.getInt(cursor.getColumnIndex(MediaStore.Video.Media.BITRATE));
+//                String bitrate = "2000000";
                 MediaFiles mediaFiles = new MediaFiles(id, title, displayName, size, duration, path,
-                        dateAdded);
+                        dateAdded, bitrate);
 
                 int index = path.lastIndexOf("/");
                 String subString = path.substring(0, index);
@@ -94,20 +97,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.folder_menu,menu);
+        getMenuInflater().inflate(R.menu.folder_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        if(id == R.id.rateus){
-            Uri uri = Uri.parse("https://play.google.com/store/apps/details?id="
-                    + getApplicationContext().getPackageName());
-            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-            startActivity(intent);
-            return true;
-        } else if (id == R.id.refresh_folders) {
+        if (id == R.id.refresh_folders) {
             finish();
             startActivity(getIntent());
             return true;

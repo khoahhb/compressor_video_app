@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bottomsheet_bg"
     android:orientation="vertical"
-    android:id="@+id/bottom_sheet"
-    android:padding="10dp"
-    android:background="@drawable/bottomsheet_bg">
+    android:padding="10dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:text="What do you want!"
-        android:textSize="20sp"
-        android:layout_gravity="center_horizontal"/>
+        android:textSize="20sp" />
 
     <LinearLayout
         android:id="@+id/bs_play"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:padding="11dp"
         android:background="?attr/selectableItemBackground"
-        android:orientation="horizontal">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="11dp">
 
         <ImageView
             android:layout_width="wrap_content"
@@ -30,23 +30,25 @@
             android:layout_gravity="center_vertical"
             android:src="@drawable/ic_play"
             app:tint="@android:color/black" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Play Video"
-            android:textColor="@android:color/black"
+            android:layout_gravity="center_vertical"
             android:layout_marginLeft="25dp"
-            android:layout_gravity="center_vertical"/>
+            android:text="Play Video"
+            android:textColor="@android:color/black" />
 
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/bs_rename"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:padding="11dp"
         android:background="?attr/selectableItemBackground"
-        android:orientation="horizontal">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="11dp">
 
         <ImageView
             android:layout_width="wrap_content"
@@ -54,23 +56,25 @@
             android:layout_gravity="center_vertical"
             android:src="@drawable/ic_rename"
             app:tint="@android:color/black" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Rename"
-            android:textColor="@android:color/black"
+            android:layout_gravity="center_vertical"
             android:layout_marginLeft="25dp"
-            android:layout_gravity="center_vertical"/>
+            android:text="Rename"
+            android:textColor="@android:color/black" />
 
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/bs_share"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:padding="11dp"
         android:background="?attr/selectableItemBackground"
-        android:orientation="horizontal">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="11dp">
 
         <ImageView
             android:layout_width="wrap_content"
@@ -78,23 +82,25 @@
             android:layout_gravity="center_vertical"
             android:src="@drawable/ic_share"
             app:tint="@android:color/black" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Share"
+            android:layout_gravity="center_vertical"
             android:layout_marginLeft="25dp"
-            android:textColor="@android:color/black"
-            android:layout_gravity="center_vertical"/>
+            android:text="Share"
+            android:textColor="@android:color/black" />
 
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/bs_delete"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:padding="11dp"
         android:background="?attr/selectableItemBackground"
-        android:orientation="horizontal">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="11dp">
 
         <ImageView
             android:layout_width="wrap_content"
@@ -102,23 +108,25 @@
             android:layout_gravity="center_vertical"
             android:src="@drawable/ic_delete"
             app:tint="@android:color/black" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Delete"
+            android:layout_gravity="center_vertical"
             android:layout_marginLeft="25dp"
-            android:textColor="@android:color/black"
-            android:layout_gravity="center_vertical"/>
+            android:text="Delete"
+            android:textColor="@android:color/black" />
 
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/bs_properties"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:padding="11dp"
         android:background="?attr/selectableItemBackground"
-        android:orientation="horizontal">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="11dp">
 
         <ImageView
             android:layout_width="wrap_content"
@@ -126,13 +134,14 @@
             android:layout_gravity="center_vertical"
             android:src="@drawable/ic_properties"
             app:tint="@android:color/black" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Properties"
+            android:layout_gravity="center_vertical"
             android:layout_marginLeft="25dp"
-            android:textColor="@android:color/black"
-            android:layout_gravity="center_vertical"/>
+            android:text="Properties"
+            android:textColor="@android:color/black" />
 
     </LinearLayout>
 
@@ -140,10 +149,10 @@
         android:id="@+id/bs_compress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:padding="11dp"
         android:background="?attr/selectableItemBackground"
-        android:orientation="horizontal">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="11dp">
 
         <ImageView
             android:layout_width="wrap_content"
@@ -151,13 +160,14 @@
             android:layout_gravity="center_vertical"
             android:src="@drawable/ic_compress"
             app:tint="@android:color/black" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Compress"
+            android:layout_gravity="center_vertical"
             android:layout_marginLeft="25dp"
-            android:textColor="@android:color/black"
-            android:layout_gravity="center_vertical"/>
+            android:text="Compress"
+            android:textColor="@android:color/black" />
 
     </LinearLayout>
 

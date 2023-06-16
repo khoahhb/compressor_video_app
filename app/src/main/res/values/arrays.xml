@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="simple_items">
+        <item>H264-Normal</item>
+        <item>H264-Medium</item>
+        <item>H264-High</item>
+        <item>H265-Normal</item>
+        <item>H265-Medium</item>
+        <item>H265-High</item>
+    </array>
+</resources>

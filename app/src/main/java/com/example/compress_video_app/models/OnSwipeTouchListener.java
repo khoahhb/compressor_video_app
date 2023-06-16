@@ -17,6 +17,14 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
         return gestureDetector.onTouchEvent(motionEvent);
     }
 
+    public void onDoubleTouch() {
+
+    }
+
+    public void onSingleTouch() {
+
+    }
+
     public final class GestureListener extends GestureDetector.SimpleOnGestureListener {
 
         @Override
@@ -35,13 +43,6 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
             onSingleTouch();
             return super.onSingleTapConfirmed(e);
         }
-    }
-
-    public void onDoubleTouch() {
-
-    }
-    public void onSingleTouch() {
-
     }
 
 }
