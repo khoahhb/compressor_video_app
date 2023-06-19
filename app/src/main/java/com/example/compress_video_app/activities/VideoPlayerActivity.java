@@ -893,6 +893,10 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
                 }
             }
         }
+    }
+
+    public enum ControlsMode {
+        LOCK, FULLSCREEN
     }    View.OnClickListener firstListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -904,10 +908,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             scaling.setOnClickListener(secondListener);
         }
     };
-
-    public enum ControlsMode {
-        LOCK, FULLSCREEN
-    }
 
     private class ScaleDetector extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
@@ -934,7 +934,11 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             zoomContainer.setVisibility(View.GONE);
             super.onScaleEnd(detector);
         }
-    }    View.OnClickListener secondListener = new View.OnClickListener() {
+    }
+
+
+
+    View.OnClickListener secondListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_ZOOM);
@@ -945,7 +949,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             scaling.setOnClickListener(thirdListener);
         }
     };
-
 
 
     View.OnClickListener thirdListener = new View.OnClickListener() {
@@ -959,8 +962,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             scaling.setOnClickListener(firstListener);
         }
     };
-
-
 
 
 }
