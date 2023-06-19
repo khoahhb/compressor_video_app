@@ -8,6 +8,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,7 +25,6 @@ import android.view.ViewGroup;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,8 +33,10 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.compress_video_app.R;
+import com.example.compress_video_app.adapters.CompressedVideosAdapter;
 import com.example.compress_video_app.compressor.HandleVideo;
 import com.example.compress_video_app.compressor.VideoCompressor;
+import com.example.compress_video_app.models.CompressedVideosDialog;
 import com.example.compress_video_app.models.MediaFiles;
 import com.example.compress_video_app.models.OnSwipeTouchListener;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -47,9 +49,15 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class CompressActivity extends AppCompatActivity {
@@ -70,26 +78,31 @@ public class CompressActivity extends AppCompatActivity {
 
     private TextView video_titleOrigin;
     private TextView video_titleCompress;
+    private TextView total_duration_Origin;
+    private TextView total_duration_Compress;
+    private TextView tvPercent;
+    private TextView tvTime;
+    private TextView tvTotal;
+
+    private TextInputLayout tilCodec;
+    private AutoCompleteTextView tieCodec;
+    private Button btnUpVideo;
+    private Button btnCompress;
+    private LinearProgressIndicator pbIsCompressed;
 
     private ConcatenatingMediaSource concatenatingMediaSourceOrigin;
     private ConcatenatingMediaSource concatenatingMediaSourceCompress;
 
     private boolean isCrossCheckedOrigin;
     private boolean isCrossCheckedCompress;
-
-    private TextView total_duration_Origin;
-    private TextView total_duration_Compress;
-
     private boolean singleTapOrigin = false;
     private boolean singleTapCompress = false;
 
+    private long startTime = 0, endTime = 0;
 
-    private TextInputLayout tilCodec;
-    private AutoCompleteTextView tieCodec;
-    private Button btnUpVideo;
-    private Button btnCompress;
-    private ProgressBar pbIsCompressed;
+
     private Uri videoInputUri;
+
     private final ActivityResultLauncher<Intent> selectVideo = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -142,6 +155,9 @@ public class CompressActivity extends AppCompatActivity {
         video_titleOrigin = findViewById(R.id.video_titleOrigin);
         video_titleCompress = findViewById(R.id.video_titleCompress);
 
+        tvPercent = findViewById(R.id.tvPercent);
+        tvTime = findViewById(R.id.tvTime);
+        tvTotal = findViewById(R.id.tvTotal);
         tilCodec = findViewById(R.id.tilCodec);
         tieCodec = findViewById(R.id.tieCodec);
         btnUpVideo = findViewById(R.id.btnUpVideo);
@@ -154,16 +170,44 @@ public class CompressActivity extends AppCompatActivity {
         videoListOrigin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                PlaylistDialog playlistDialog = new PlaylistDialog(mVideoFiles, videoFilesAdapter);
-//                playlistDialog.show(getSupportFragmentManager(), playlistDialog.getTag());
-            }
-        });
 
-        videoListCompress.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                PlaylistDialog playlistDialog = new PlaylistDialog(mVideoFiles, videoFilesAdapter);
-//                playlistDialog.show(getSupportFragmentManager(), playlistDialog.getTag());
+                if (videoInputUri != null) {
+
+                    String inputPath = getRealPathFromURI(CompressActivity.this, videoInputUri);
+                    String originName = inputPath.substring(inputPath.lastIndexOf('/') + 1, inputPath.lastIndexOf('.'));
+
+                    String folderName = "temp_videos";
+                    String folderPath = getFilesDir() + File.separator + folderName;
+
+                    List<File> videoFiles = getVideoFiles(new File(folderPath));
+                    ArrayList<HandleVideo> mediaFilesList = new ArrayList<>();
+
+                    CompressedVideosAdapter videoFilesAdapter = null;
+
+                    for (File file : videoFiles) {
+                        HandleVideo video = null;
+                        try {
+                             video = new HandleVideo(Uri.fromFile(file));
+
+                        }catch (Exception e){
+                            video = null;
+                        }
+                        if (video != null && video.getFormatFileName().contains(
+                                originName))
+                            mediaFilesList.add(video);
+                    }
+                    CompressedVideosDialog playlistDialog = new CompressedVideosDialog(mediaFilesList, videoFilesAdapter, new CompressedVideosDialog.ElementListener() {
+                        @Override
+                        public void onClickHandle(Uri uri) {
+                            tvPercent.setVisibility(View.GONE);
+                            tvTime.setVisibility(View.GONE);
+                            tvTotal.setVisibility(View.GONE);
+                            getDataOutput(uri);
+                        }
+                    });
+                    playlistDialog.show(getSupportFragmentManager(), playlistDialog.getTag());
+
+                }
             }
         });
 
@@ -495,7 +539,7 @@ public class CompressActivity extends AppCompatActivity {
 
         HandleVideo video = new HandleVideo(Uri.fromFile(realFile));
 
-        videoListOrigin.setVisibility(View.GONE);
+        videoListOrigin.setVisibility(View.VISIBLE);
         total_duration_Origin.setText(video.getFormatDuration());
         video_titleOrigin.setText(video.getFormatFileName());
 
@@ -524,8 +568,15 @@ public class CompressActivity extends AppCompatActivity {
 
     private void getDataOutput(Uri uri) {
 
-        videoOutputUri = uri;
+        tvPercent.setText(0 + "%");
+        tvPercent.setVisibility(View.GONE);
+        pbIsCompressed.setVisibility(View.GONE);
+        pbIsCompressed.setProgress(0);
+        playerViewCompress.setVisibility(View.VISIBLE);
 
+        MediaScannerConnection.scanFile(CompressActivity.this, new String[]{uri.getPath()}, null, null);
+
+        videoOutputUri = uri;
 
         String realPath = uri.getPath();
 
@@ -572,8 +623,19 @@ public class CompressActivity extends AppCompatActivity {
             if (codec.isEmpty()) {
                 tilCodec.setError("Choose profile");
             } else {
+
+                startTime = System.currentTimeMillis();
+
                 pbIsCompressed.setVisibility(View.VISIBLE);
+                tvPercent.setVisibility(View.VISIBLE);
+                tvTime.setVisibility(View.VISIBLE);
+                tvTotal.setVisibility(View.VISIBLE);
                 playerViewCompress.setVisibility(View.GONE);
+
+                String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+
+                tvTime.setText("Start - End: " + currentTime);
+                tvTotal.setText("Total (second): " + 0);
 
                 File inputFile = new File(inputPath);
 
@@ -588,8 +650,10 @@ public class CompressActivity extends AppCompatActivity {
                         public void onSuccess(Uri uri) {
                             Handler mainHandler = new Handler(Looper.getMainLooper());
                             Runnable myRunnable = () -> {
-                                pbIsCompressed.setVisibility(View.GONE);
-                                playerViewCompress.setVisibility(View.VISIBLE);
+                                endTime = System.currentTimeMillis();
+                                String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+                                tvTime.setText(tvTime.getText() + " - " + currentTime);
+                                tvTotal.setText("Total (second): " + (endTime - startTime) / 1000);
                                 getDataOutput(uri);
                             };
                             mainHandler.post(myRunnable);
@@ -601,11 +665,18 @@ public class CompressActivity extends AppCompatActivity {
                         }
 
                         @Override
-                        public void onProgress(float percent) {
-
+                        public void onProgress(int percent) {
+                            Handler mainHandler = new Handler(Looper.getMainLooper());
+                            Runnable myRunnable = () -> {
+                                pbIsCompressed.setProgress(percent);
+                                tvPercent.setText(percent + "%");
+                            };
+                            mainHandler.post(myRunnable);
                         }
                     });
                     compressor.setInput(new HandleVideo(Uri.fromFile(inputFile)));
+                    compressor.isSaveInternal(true);
+                    compressor.isAudioCompress(false);
 
                     if (codec.equals("H264-Normal"))
                         compressor.setProfileH264Normal();
@@ -643,5 +714,28 @@ public class CompressActivity extends AppCompatActivity {
                 cursor.close();
             }
         }
+    }
+
+    private List<File> getVideoFiles(File folder) {
+        List<File> videoFiles = new ArrayList<>();
+        File[] files = folder.listFiles();
+
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    videoFiles.addAll(getVideoFiles(file));
+                } else if (isVideoFile(file)) {
+                    videoFiles.add(file);
+                }
+            }
+        }
+
+        return videoFiles;
+    }
+
+    private boolean isVideoFile(File file) {
+        String name = file.getName();
+        String extension = name.substring(name.lastIndexOf(".") + 1).toLowerCase();
+        return extension.equals("mp4") || extension.equals("mkv") || extension.equals("avi");
     }
 }

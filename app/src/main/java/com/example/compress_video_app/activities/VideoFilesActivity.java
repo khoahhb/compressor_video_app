@@ -95,7 +95,6 @@ public class VideoFilesActivity extends AppCompatActivity implements SearchView.
                 @SuppressLint("Range") String path = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA));
                 @SuppressLint("Range") String dateAdded = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATE_ADDED));
                 @SuppressLint("Range") String bitrate = "" + cursor.getInt(cursor.getColumnIndex(MediaStore.Video.Media.BITRATE));
-//                String bitrate = "2000000";
 
                 MediaFiles mediaFiles = new MediaFiles(id, title, displayName, size, duration, path,
                         dateAdded, bitrate);
