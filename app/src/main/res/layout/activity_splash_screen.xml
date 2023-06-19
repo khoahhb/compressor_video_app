@@ -20,12 +20,12 @@
 
     <TextView
         android:id="@+id/textView"
-        android:textAlignment="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:fontFamily="@font/bangers"
         android:text="Video Compressor"
+        android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="38sp"
         app:layout_constraintEnd_toEndOf="parent"

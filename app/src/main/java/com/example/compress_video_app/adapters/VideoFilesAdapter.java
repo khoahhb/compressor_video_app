@@ -1,16 +1,21 @@
 package com.example.compress_video_app.adapters;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.MediaStore;
@@ -25,32 +30,34 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.compress_video_app.R;
+import com.example.compress_video_app.activities.CompressActivity;
 import com.example.compress_video_app.activities.VideoPlayerActivity;
-import com.example.compress_video_app.compressor.InputVideo;
+import com.example.compress_video_app.compressor.HandleVideo;
 import com.example.compress_video_app.compressor.VideoCompressor;
 import com.example.compress_video_app.models.MediaFiles;
 import com.example.compress_video_app.models.Utility;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class VideoFilesAdapter extends RecyclerView.Adapter<VideoFilesAdapter.ViewHolder> {
 
     private static final String TAG = "VideoFilesAdapter";
-
-    private ArrayList<MediaFiles> videoList;
-    private Context context;
+    private final Context context;
+    private final int viewType;
     BottomSheetDialog bottomSheetDialog;
-    private int viewType;
+    private ArrayList<MediaFiles> videoList;
 
-    public VideoFilesAdapter(ArrayList<MediaFiles> videoList, Context context,int viewType) {
+    public VideoFilesAdapter(ArrayList<MediaFiles> videoList, Context context, int viewType) {
         this.videoList = videoList;
         this.context = context;
         this.viewType = viewType;
@@ -242,15 +249,20 @@ public class VideoFilesAdapter extends RecyclerView.Adapter<VideoFilesAdapter.Vi
                     bsView.findViewById(R.id.bs_compress).setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            String inputPath = videoList.get(position).getPath();
-
-                            try {
-                                compressVideo(inputPath);
-                            } catch (IOException e) {
-                                Log.e(TAG, "Compress problems: " + e);
-                                e.printStackTrace();
-                            }
-
+//                            String inputPath = videoList.get(position).getPath();
+//
+//                            try {
+//                                compressVideo(inputPath);
+//                            } catch (IOException e) {
+//                                Log.e(TAG, "Compress problems: " + e);
+//                                e.printStackTrace();
+//                            }
+//
+                            Intent intent = new Intent(context, CompressActivity.class);
+                            Bundle bundle = new Bundle();
+                            bundle.putParcelable("origin", videoList.get(position));
+                            intent.putExtras(bundle);
+                            context.startActivity(intent);
                             bottomSheetDialog.dismiss();
                         }
                     });
@@ -271,10 +283,10 @@ public class VideoFilesAdapter extends RecyclerView.Adapter<VideoFilesAdapter.Vi
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, VideoPlayerActivity.class);
-                intent.putExtra("position",position);
+                intent.putExtra("position", position);
                 intent.putExtra("video_title", videoList.get(position).getDisplayName());
                 Bundle bundle = new Bundle();
-                bundle.putParcelableArrayList("videoArrayList",videoList);
+                bundle.putParcelableArrayList("videoArrayList", videoList);
                 intent.putExtras(bundle);
                 context.startActivity(intent);
                 if (viewType == 1) {
@@ -289,26 +301,13 @@ public class VideoFilesAdapter extends RecyclerView.Adapter<VideoFilesAdapter.Vi
         return videoList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView thumbnail,menu_more;
-        TextView videoName,videoSize,videoDuration;
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            thumbnail = itemView.findViewById(R.id.thumbnail);
-            menu_more = itemView.findViewById(R.id.video_menu_more);
-            videoName = itemView.findViewById(R.id.video_name);
-            videoSize = itemView.findViewById(R.id.video_size);
-            videoDuration = itemView.findViewById(R.id.video_duration);
-        }
-    }
-
-    public void  updateVideoFiles(ArrayList<MediaFiles> files) {
+    public void updateVideoFiles(ArrayList<MediaFiles> files) {
         videoList = new ArrayList<>();
         videoList.addAll(files);
         notifyDataSetChanged();
     }
 
-    private void compressVideo(String inputPath) throws IOException {
+    private void compressVideo(String inputPath) {
 
         File inputFile = new File(inputPath);
 
@@ -320,8 +319,40 @@ public class VideoFilesAdapter extends RecyclerView.Adapter<VideoFilesAdapter.Vi
                 }
 
                 @Override
-                public void onSuccess(String compressVideoPath) {
+                public void onSuccess(Uri uri) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        NotificationChannel channel1 = new NotificationChannel(
+                                "channel1",
+                                "Channel 1",
+                                NotificationManager.IMPORTANCE_HIGH
+                        );
+                        channel1.setDescription("This is Channel 1");
 
+
+                        NotificationManager manager = context.getSystemService(NotificationManager.class);
+                        manager.createNotificationChannel(channel1);
+                        NotificationCompat.Builder notification = new NotificationCompat.Builder(context, "channel1")
+                                .setSmallIcon(R.drawable.ic_compress)
+                                .setContentTitle("Compress Success")
+                                .setContentText("Compress success, refresh the page")
+                                .setPriority(NotificationCompat.PRIORITY_LOW)
+                                .setOnlyAlertOnce(true);
+
+                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+                        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                            // TODO: Consider calling
+                            //    ActivityCompat#requestPermissions
+                            // here to request the missing permissions, and then overriding
+                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                            //                                          int[] grantResults)
+                            // to handle the case where the user grants the permission. See the documentation
+                            // for ActivityCompat#requestPermissions for more details.
+                            return;
+                        } else {
+
+                        }
+                        notificationManager.notify(2, notification.build());
+                    }
                 }
 
                 @Override
@@ -334,13 +365,27 @@ public class VideoFilesAdapter extends RecyclerView.Adapter<VideoFilesAdapter.Vi
 
                 }
             });
-            compressor.setInput(new InputVideo(Uri.fromFile(inputFile)));
-            compressor.setProfileH264Normal();
+            compressor.setInput(new HandleVideo(Uri.fromFile(inputFile)));
+            compressor.setProfileH264High();
             compressor.start();
 
         } catch (Throwable e) {
             Log.e(TAG, "Problem: " + e);
             e.printStackTrace();
+        }
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView thumbnail, menu_more;
+        TextView videoName, videoSize, videoDuration;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            thumbnail = itemView.findViewById(R.id.thumbnail);
+            menu_more = itemView.findViewById(R.id.video_menu_more);
+            videoName = itemView.findViewById(R.id.video_name);
+            videoSize = itemView.findViewById(R.id.video_size);
+            videoDuration = itemView.findViewById(R.id.video_duration);
         }
     }
 }

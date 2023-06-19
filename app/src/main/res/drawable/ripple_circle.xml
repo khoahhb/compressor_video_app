@@ -4,5 +4,5 @@
     android:color="@color/purple_200"
     tools:ignore="NewApi">
 
-    <item android:drawable="@drawable/circle"/>
+    <item android:drawable="@drawable/circle" />
 </ripple>
