@@ -3,17 +3,16 @@ package com.example.compress_video_app.models;
 import android.content.Context;
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+
 import com.example.compress_video_app.compressor.MediaHelper;
-import com.example.compress_video_app.models.Utility;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.Serializable;
-
-import androidx.annotation.NonNull;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
-import androidx.room.Ignore;
 
 @Entity(tableName = "videos")
 public class HandleVideo implements Serializable {

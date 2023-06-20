@@ -35,11 +35,11 @@ public class VideoCompressor {
 
     private final File internalDir;
     private final File externalDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-    private File chosenDir;
     private final NotificationManagerCompat notificationManager;
     private final Context mContext;
     private final CompressListener mCompressListener;
-
+    private final long mAudioEncoderPresentationTimeUs = 0;
+    private File chosenDir;
     private String mMime = MediaHelper.MIME_TYPE_AVC;
     private int mWidth = WIDTH_720P;
     private int mHeight = HEIGHT_720P;
@@ -48,40 +48,27 @@ public class VideoCompressor {
     private int mFrameRate = FPS_30;
     private int mIFrameInterval = IFRAME_INTERVAL_10;
     private boolean isAudioCompress = false; // compress audio
-
     private HandleVideo mInput = null;
-
     private String mInputName;
     private String realName;
-
     private Uri mOutputUri;
     private Uri mOutputRealUri;
-
     private MediaExtractor mVideoExtractor;
     private MediaExtractor mAudioExtractor;
-
     private MediaFormat mVideoInputFormat;
     private MediaFormat mAudioInputFormat;
-
     private InputSurface mInputSurface;
     private OutputSurface mOutputSurface;
-
     private MediaMuxer mMuxer = null;
-
     private MediaCodec mVideoDecoder;
     private MediaCodec mAudioDecoder;
-
     private MediaCodec mVideoEncoder = null;
     private MediaCodec mAudioEncoder = null;
-
     private int mVideoTrackIndex = -1;
     private int mAudioTrackIndex = -1;
-
     private long mVideoLastSampleTime = 0;
     private long mAudioLastSampleTime = 0;
-
     private long mVideoEncoderPresentationTimeUs = 0;
-    private final long mAudioEncoderPresentationTimeUs = 0;
 
     public VideoCompressor(Context context, CompressListener compressListener) {
         this.mCompressListener = compressListener;

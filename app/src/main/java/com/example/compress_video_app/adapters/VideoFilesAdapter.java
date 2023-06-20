@@ -30,7 +30,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.compress_video_app.R;
-import com.example.compress_video_app.activities.CompressActivity;
 import com.example.compress_video_app.activities.CompressSingleActivity;
 import com.example.compress_video_app.activities.VideoPlayerActivity;
 import com.example.compress_video_app.models.MediaFiles;
@@ -181,7 +180,7 @@ public class VideoFilesAdapter extends RecyclerView.Adapter<VideoFilesAdapter.Vi
                                         notifyItemRangeChanged(position, videoList.size());
                                         Toast.makeText(context, "Video Deleted", Toast.LENGTH_SHORT).show();
                                     } else {
-                                        Toast.makeText(context, "can't deleted", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(context, "Can't deleted", Toast.LENGTH_SHORT).show();
                                     }
                                 }
                             });
@@ -241,7 +240,7 @@ public class VideoFilesAdapter extends RecyclerView.Adapter<VideoFilesAdapter.Vi
                         @Override
                         public void onClick(View v) {
                             Intent intent = new Intent(context, CompressSingleActivity.class);
-                            intent.setData( Uri.fromFile(new File(videoList.get(position).getPath())));
+                            intent.setData(Uri.fromFile(new File(videoList.get(position).getPath())));
                             context.startActivity(intent);
                             bottomSheetDialog.dismiss();
                         }

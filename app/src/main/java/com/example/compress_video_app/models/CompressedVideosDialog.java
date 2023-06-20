@@ -21,13 +21,12 @@ import java.util.ArrayList;
 
 public class CompressedVideosDialog extends BottomSheetDialogFragment {
 
+    private final ElementListener fileListener;
     ArrayList<HandleVideo> arrayList = new ArrayList<>();
     CompressedVideosAdapter videoFilesAdapter;
     BottomSheetDialog bottomSheetDialog;
     RecyclerView recyclerView;
     TextView folder;
-
-    private final ElementListener fileListener;
 
     public CompressedVideosDialog(ArrayList<HandleVideo> arrayList, CompressedVideosAdapter videoFilesAdapter, ElementListener elementListener) {
         this.arrayList = arrayList;
@@ -35,8 +34,8 @@ public class CompressedVideosDialog extends BottomSheetDialogFragment {
         this.fileListener = elementListener;
     }
 
-    public void updateList(ArrayList<HandleVideo> list){
-        if(arrayList!= null && videoFilesAdapter != null){
+    public void updateList(ArrayList<HandleVideo> list) {
+        if (arrayList != null && videoFilesAdapter != null) {
             arrayList = list;
             videoFilesAdapter.notifyDataSetChanged();
         }

@@ -897,17 +897,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
 
     public enum ControlsMode {
         LOCK, FULLSCREEN
-    }    View.OnClickListener firstListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
-            player.setVideoScalingMode(C.VIDEO_SCALING_MODE_DEFAULT);
-            scaling.setImageResource(R.drawable.fullscreen);
-
-            Toast.makeText(VideoPlayerActivity.this, "Full Screen", Toast.LENGTH_SHORT).show();
-            scaling.setOnClickListener(secondListener);
-        }
-    };
+    }
 
     private class ScaleDetector extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
@@ -934,7 +924,18 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             zoomContainer.setVisibility(View.GONE);
             super.onScaleEnd(detector);
         }
-    }
+    }    View.OnClickListener firstListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
+            player.setVideoScalingMode(C.VIDEO_SCALING_MODE_DEFAULT);
+            scaling.setImageResource(R.drawable.fullscreen);
+
+            Toast.makeText(VideoPlayerActivity.this, "Full Screen", Toast.LENGTH_SHORT).show();
+            scaling.setOnClickListener(secondListener);
+        }
+    };
+
 
 
 

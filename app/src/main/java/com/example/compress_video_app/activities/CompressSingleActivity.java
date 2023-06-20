@@ -1,11 +1,7 @@
 package com.example.compress_video_app.activities;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.media.MediaScannerConnection;
@@ -18,26 +14,22 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.compress_video_app.R;
 import com.example.compress_video_app.adapters.CompressedVideosAdapter;
-import com.example.compress_video_app.database.CompressedVideoRepository;
-import com.example.compress_video_app.models.HandleVideo;
 import com.example.compress_video_app.compressor.VideoCompressor;
+import com.example.compress_video_app.database.CompressedVideoRepository;
 import com.example.compress_video_app.models.CompressedVideosDialog;
+import com.example.compress_video_app.models.HandleVideo;
 import com.example.compress_video_app.models.MediaFiles;
 import com.example.compress_video_app.models.OnSwipeTouchListener;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -61,9 +53,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.schedulers.Schedulers;
-
 
 public class CompressSingleActivity extends AppCompatActivity {
 
@@ -71,8 +60,8 @@ public class CompressSingleActivity extends AppCompatActivity {
     private static final String TAG = "CompressSingleActivity";
 
     private MediaFiles mOriginVideo;
-    private CompressedVideoRepository repository ;
-    private List<File> videoFiles ;
+    private CompressedVideoRepository repository;
+    private List<File> videoFiles;
     private ArrayList<HandleVideo> mediaFilesList;
     private CompressedVideosDialog playlistDialog;
 
@@ -124,7 +113,7 @@ public class CompressSingleActivity extends AppCompatActivity {
 
         Uri uri = getIntent().getData();
 
-        if(uri != null){
+        if (uri != null) {
             getDataInput(uri);
         }
     }
@@ -446,13 +435,13 @@ public class CompressSingleActivity extends AppCompatActivity {
             HandleVideo videot;
             try {
                 videot = new HandleVideo(Uri.fromFile(file));
-                if(video.getDuration() == 0)
+                if (video.getDuration() == 0)
                     file.delete();
-                else{
-                    if(videot.getName().contains(video.getName()))
+                else {
+                    if (videot.getName().contains(video.getName()))
                         mediaFilesList.add(videot);
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 file.delete();
             }
         }
@@ -570,10 +559,10 @@ public class CompressSingleActivity extends AppCompatActivity {
 
                                 int position = findExist(video);
 
-                                if(position != -1) {
+                                if (position != -1) {
                                     videoFiles.set(position, realFile);
                                     mediaFilesList.set(position, video);
-                                }else{
+                                } else {
                                     videoFiles.add(realFile);
                                     mediaFilesList.add(video);
                                 }
@@ -665,9 +654,9 @@ public class CompressSingleActivity extends AppCompatActivity {
         return extension.equals("mp4") || extension.equals("mkv") || extension.equals("avi");
     }
 
-    private int findExist(HandleVideo mVideo){
-        for(int i =0 ; i < mediaFilesList.size(); i++){
-            if(mediaFilesList.get(i).getName().equals(mVideo.getName()))
+    private int findExist(HandleVideo mVideo) {
+        for (int i = 0; i < mediaFilesList.size(); i++) {
+            if (mediaFilesList.get(i).getName().equals(mVideo.getName()))
                 return i;
         }
         return -1;

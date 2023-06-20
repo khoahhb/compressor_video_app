@@ -4,8 +4,6 @@ import android.app.Application;
 
 import com.example.compress_video_app.models.HandleVideo;
 
-import io.reactivex.Completable;
-
 public class CompressedVideoRepository {
     private final CompressedVideoDao mDao;
 

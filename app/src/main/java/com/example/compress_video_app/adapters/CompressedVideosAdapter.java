@@ -25,9 +25,9 @@ public class CompressedVideosAdapter extends RecyclerView.Adapter<CompressedVide
 
     private static final String TAG = "VideoFilesAdapter2";
     private final Context context;
+    private final CompressedVideoListener compressedVideoListener;
     BottomSheetDialog bottomSheetDialog;
     private ArrayList<HandleVideo> videoList;
-    private final CompressedVideoListener compressedVideoListener;
 
     public CompressedVideosAdapter(ArrayList<HandleVideo> videoList, Context context, CompressedVideoListener compressedVideoListener) {
         this.videoList = videoList;
