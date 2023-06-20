@@ -13,6 +13,10 @@
         android:title="Refresh"
         app:showAsAction="never" />
     <item
+        android:id="@+id/go_compress2"
+        android:title="Compress"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/sort_by"
         android:title="Sort By"
         app:showAsAction="never" />

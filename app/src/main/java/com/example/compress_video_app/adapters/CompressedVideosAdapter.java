@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.compress_video_app.R;
-import com.example.compress_video_app.compressor.HandleVideo;
+import com.example.compress_video_app.models.HandleVideo;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.io.File;
@@ -45,7 +45,7 @@ public class CompressedVideosAdapter extends RecyclerView.Adapter<CompressedVide
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
 
-        holder.videoName.setText(videoList.get(position).getFormatFileName());
+        holder.videoName.setText(videoList.get(position).getName());
         holder.videoSize.setText(videoList.get(position).getFormatSize(context));
         holder.videoDuration.setText(videoList.get(position).getFormatDuration());
 

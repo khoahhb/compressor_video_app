@@ -13,6 +13,8 @@ import android.util.Log;
 
 import androidx.core.app.NotificationManagerCompat;
 
+import com.example.compress_video_app.models.HandleVideo;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -332,7 +334,7 @@ public class VideoCompressor {
         long endTime = mInput.getEndTime();
 
         if (endTime == -1) {
-            endTime = mInput.getVideoDuration();
+            endTime = mInput.getDuration();
         }
 
         boolean outputVideoDoneNextTimeWeCheck = false;
@@ -439,7 +441,7 @@ public class VideoCompressor {
                             float total = 0;
 
                             presentation = (int) ((nSecs / (1000 * 1000)));
-                            total = mInput.getVideoDuration();
+                            total = mInput.getDuration();
 
                             int percent = (int) ((presentation / total) * 100);
 
@@ -476,7 +478,7 @@ public class VideoCompressor {
         long endTime = mInput.getEndTime();
 
         if (endTime == -1) {
-            endTime = mInput.getVideoDuration();
+            endTime = mInput.getDuration();
         }
 
         boolean outputAudioDoneNextTimeWeCheck = false;

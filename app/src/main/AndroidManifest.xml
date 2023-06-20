@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.compress_video_app" >
+    package="com.example.compress_video_app">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -24,16 +24,19 @@
         android:roundIcon="@mipmap/vpicon"
         android:supportsRtl="true"
         android:theme="@style/Theme.VideoCompressor"
-        tools:targetApi="31" >
+        tools:targetApi="31">
         <activity
-            android:name=".activities.SplashScreenActivity"
+            android:name=".activities.CompressSingleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.CompressActivity"
             android:exported="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
             android:exported="false"
-            android:grantUriPermissions="true" >
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
@@ -58,8 +61,8 @@
             android:name=".activities.AllowAccessActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.CompressActivity"
-            android:exported="true" >
+            android:name=".activities.SplashScreenActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -6,4 +6,8 @@
         android:id="@+id/refresh_folders"
         android:title="Refresh"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/go_compress1"
+        android:title="Compress"
+        app:showAsAction="never" />
 </menu>

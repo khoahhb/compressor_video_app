@@ -65,6 +65,7 @@ public class VideoFilesActivity extends AppCompatActivity implements SearchView.
         videoFilesAdapter.notifyDataSetChanged();
     }
 
+    @SuppressLint("Range")
     private ArrayList<MediaFiles> fetchMedia(String folderName) {
         SharedPreferences preferences = getSharedPreferences(MY_PREF, MODE_PRIVATE);
         String sort_value = preferences.getString("sort", "abcd");
@@ -94,8 +95,12 @@ public class VideoFilesActivity extends AppCompatActivity implements SearchView.
                 @SuppressLint("Range") String duration = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DURATION));
                 @SuppressLint("Range") String path = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA));
                 @SuppressLint("Range") String dateAdded = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATE_ADDED));
-                @SuppressLint("Range") String bitrate = "" + cursor.getInt(cursor.getColumnIndex(MediaStore.Video.Media.BITRATE));
-
+                @SuppressLint("Range") String bitrate ="";
+                try {
+                    bitrate = "" + cursor.getInt(cursor.getColumnIndex(MediaStore.Video.Media.BITRATE));
+                }catch (Exception e){
+                    bitrate = "";
+                }
                 MediaFiles mediaFiles = new MediaFiles(id, title, displayName, size, duration, path,
                         dateAdded, bitrate);
                 videoFiles.add(mediaFiles);

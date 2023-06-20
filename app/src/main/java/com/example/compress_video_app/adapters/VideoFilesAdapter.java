@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.compress_video_app.R;
 import com.example.compress_video_app.activities.CompressActivity;
+import com.example.compress_video_app.activities.CompressSingleActivity;
 import com.example.compress_video_app.activities.VideoPlayerActivity;
 import com.example.compress_video_app.models.MediaFiles;
 import com.example.compress_video_app.models.Utility;
@@ -239,19 +240,8 @@ public class VideoFilesAdapter extends RecyclerView.Adapter<VideoFilesAdapter.Vi
                     bsView.findViewById(R.id.bs_compress).setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-//                            String inputPath = videoList.get(position).getPath();
-//
-//                            try {
-//                                compressVideo(inputPath);
-//                            } catch (IOException e) {
-//                                Log.e(TAG, "Compress problems: " + e);
-//                                e.printStackTrace();
-//                            }
-//
-                            Intent intent = new Intent(context, CompressActivity.class);
-                            Bundle bundle = new Bundle();
-                            bundle.putParcelable("origin", videoList.get(position));
-                            intent.putExtras(bundle);
+                            Intent intent = new Intent(context, CompressSingleActivity.class);
+                            intent.setData( Uri.fromFile(new File(videoList.get(position).getPath())));
                             context.startActivity(intent);
                             bottomSheetDialog.dismiss();
                         }

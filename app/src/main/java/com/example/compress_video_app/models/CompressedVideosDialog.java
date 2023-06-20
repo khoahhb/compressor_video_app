@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.compress_video_app.R;
 import com.example.compress_video_app.adapters.CompressedVideosAdapter;
-import com.example.compress_video_app.compressor.HandleVideo;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
@@ -34,6 +33,13 @@ public class CompressedVideosDialog extends BottomSheetDialogFragment {
         this.arrayList = arrayList;
         this.videoFilesAdapter = videoFilesAdapter;
         this.fileListener = elementListener;
+    }
+
+    public void updateList(ArrayList<HandleVideo> list){
+        if(arrayList!= null && videoFilesAdapter != null){
+            arrayList = list;
+            videoFilesAdapter.notifyDataSetChanged();
+        }
     }
 
     @NonNull
