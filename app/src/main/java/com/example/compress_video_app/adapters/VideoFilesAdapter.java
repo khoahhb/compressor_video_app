@@ -261,16 +261,19 @@ public class VideoFilesAdapter extends RecyclerView.Adapter<VideoFilesAdapter.Vi
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, VideoPlayerActivity.class);
-                intent.putExtra("position", position);
-                intent.putExtra("video_title", videoList.get(position).getDisplayName());
-                Bundle bundle = new Bundle();
-                bundle.putParcelableArrayList("videoArrayList", videoList);
-                intent.putExtras(bundle);
+                Intent intent = new Intent(context, CompressSingleActivity.class);
+                intent.setData(Uri.fromFile(new File(videoList.get(position).getPath())));
                 context.startActivity(intent);
-                if (viewType == 1) {
-                    ((Activity) context).finish();
-                }
+//                Intent intent = new Intent(context, VideoPlayerActivity.class);
+//                intent.putExtra("position", position);
+//                intent.putExtra("video_title", videoList.get(position).getDisplayName());
+//                Bundle bundle = new Bundle();
+//                bundle.putParcelableArrayList("videoArrayList", videoList);
+//                intent.putExtras(bundle);
+//                context.startActivity(intent);
+//                if (viewType == 1) {
+//                    ((Activity) context).finish();
+//                }
             }
         });
     }

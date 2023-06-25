@@ -16,12 +16,16 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.compress_video_app.R;
@@ -42,6 +46,8 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -81,10 +87,10 @@ public class CompressSingleActivity extends AppCompatActivity {
     private TextView tvPercent;
     private TextView tvTime;
     private TextView tvTotal;
-
-    private TextInputLayout tilCodec;
-    private AutoCompleteTextView tieCodec;
-    private Button btnCompress;
+//
+//    private TextInputLayout tilCodec;
+//    private AutoCompleteTextView tieCodec;
+    private Button btnCompress,btnShowSetting;
     private LinearProgressIndicator pbIsCompressed;
 
     private ConcatenatingMediaSource concatenatingMediaSourceOrigin;
@@ -133,9 +139,10 @@ public class CompressSingleActivity extends AppCompatActivity {
         tvPercent = findViewById(R.id.tvPercent);
         tvTime = findViewById(R.id.tvTime);
         tvTotal = findViewById(R.id.tvTotal);
-        tilCodec = findViewById(R.id.tilCodec);
-        tieCodec = findViewById(R.id.tieCodec);
+//        tilCodec = findViewById(R.id.tilCodec);
+//        tieCodec = findViewById(R.id.tieCodec);
         btnCompress = findViewById(R.id.btnCompress);
+        btnShowSetting = findViewById(R.id.btnShowSetting);
         pbIsCompressed = findViewById(R.id.pbIsCompressed);
     }
 
@@ -277,28 +284,40 @@ public class CompressSingleActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                compressVideo();
+//                compressVideo();
             }
         });
 
-        tieCodec.addTextChangedListener(new TextWatcher() {
+//        tieCodec.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable editable) {
+//                if (!Objects.requireNonNull(tieCodec
+//                        .getText()).toString().trim().isEmpty()) {
+//                    tilCodec.setError(null);
+//
+//                }
+//            }
+//        });
+
+        btnShowSetting.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                if (!Objects.requireNonNull(tieCodec
-                        .getText()).toString().trim().isEmpty()) {
-                    tilCodec.setError(null);
-
-                }
+            public void onClick(View v) {
+                new MaterialAlertDialogBuilder(CompressSingleActivity.this)
+                        .setTitle("test")
+                        .setMessage("test")
+                        .setPositiveButton("test", null)
+                        .setNegativeButton("test", null)
+                        .show();
             }
         });
     }
@@ -333,7 +352,6 @@ public class CompressSingleActivity extends AppCompatActivity {
                 playerCompress.getPlaybackState();
             }
         }
-
     }
 
     @Override
@@ -504,117 +522,116 @@ public class CompressSingleActivity extends AppCompatActivity {
         playerCompress.setPlayWhenReady(true);
     }
 
-    private void compressVideo() {
-
-        if (videoInputUri == null) {
-            tilCodec.setError("Select input video");
-        } else {
-
-
-            String codec = tieCodec.getText().toString().trim();
-
-            if (codec.isEmpty()) {
-                tilCodec.setError("Choose profile");
-            } else {
-
-                startTime = System.currentTimeMillis();
-
-                pbIsCompressed.setVisibility(View.VISIBLE);
-                tvPercent.setVisibility(View.VISIBLE);
-                tvTime.setVisibility(View.VISIBLE);
-                tvTotal.setVisibility(View.VISIBLE);
-                playerViewCompress.setVisibility(View.GONE);
-
-                String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
-
-                tvTime.setText("Start - End: " + currentTime);
-                tvTotal.setText("Total (second): " + 0);
-
-                try {
-                    VideoCompressor compressor = new VideoCompressor(this, new VideoCompressor.CompressListener() {
-                        @Override
-                        public void onStart() {
-
-                        }
-
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            Handler mainHandler = new Handler(Looper.getMainLooper());
-                            Runnable myRunnable = () -> {
-                                MediaScannerConnection.scanFile(CompressSingleActivity.this, new String[]{uri.getPath()}, null, null);
-
-                                endTime = System.currentTimeMillis();
-                                String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
-                                tvTime.setText(tvTime.getText() + " - " + currentTime);
-                                tvTotal.setText("Total (second): " + (endTime - startTime) / 1000);
-
-                                String realPath = uri.getPath();
-
-                                File realFile = new File(realPath);
-
-                                HandleVideo video = new HandleVideo(Uri.fromFile(realFile));
-
-                                video.setCompressStartEnd(tvTime.getText().toString());
-                                video.setCompressTotal(tvTotal.getText().toString());
-
-                                int position = findExist(video);
-
-                                if (position != -1) {
-                                    videoFiles.set(position, realFile);
-                                    mediaFilesList.set(position, video);
-                                } else {
-                                    videoFiles.add(realFile);
-                                    mediaFilesList.add(video);
-                                }
-
-                                playlistDialog.updateList(mediaFilesList);
-                                repository.insertVideo(video);
-                                getDataOutput(uri);
-                            };
-                            mainHandler.post(myRunnable);
-                        }
-
-                        @Override
-                        public void onFail() {
-
-                        }
-
-                        @Override
-                        public void onProgress(int percent) {
-                            Handler mainHandler = new Handler(Looper.getMainLooper());
-                            Runnable myRunnable = () -> {
-                                pbIsCompressed.setProgress(percent);
-                                tvPercent.setText(percent + "%");
-                            };
-                            mainHandler.post(myRunnable);
-                        }
-                    });
-                    compressor.setInput(new HandleVideo(videoInputUri));
-                    compressor.isSaveInternal(true);
-                    compressor.isAudioCompress(false);
-
-                    if (codec.equals("H264-Normal"))
-                        compressor.setProfileH264Normal();
-                    else if (codec.equals("H264-Medium"))
-                        compressor.setProfileH264Medium();
-                    else if (codec.equals("H264-High"))
-                        compressor.setProfileH264High();
-                    else if (codec.equals("H265-Normal"))
-                        compressor.setProfileH265Normal();
-                    else if (codec.equals("H265-Medium"))
-                        compressor.setProfileH265Medium();
-                    else if (codec.equals("H265-High"))
-                        compressor.setProfileH265High();
-
-                    compressor.start();
-
-                } catch (Throwable e) {
-                    Log.e(TAG, "Problem: " + e);
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
+//    private void compressVideo() {
+//
+//        if (videoInputUri == null) {
+//            tilCodec.setError("Select input video");
+//        } else {
+//
+//            String codec = tieCodec.getText().toString().trim();
+//
+//            if (codec.isEmpty()) {
+//                tilCodec.setError("Choose profile");
+//            } else {
+//
+//                startTime = System.currentTimeMillis();
+//
+//                pbIsCompressed.setVisibility(View.VISIBLE);
+//                tvPercent.setVisibility(View.VISIBLE);
+//                tvTime.setVisibility(View.VISIBLE);
+//                tvTotal.setVisibility(View.VISIBLE);
+//                playerViewCompress.setVisibility(View.GONE);
+//
+//                String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+//
+//                tvTime.setText("Start - End: " + currentTime);
+//                tvTotal.setText("Total (second): " + 0);
+//
+//                try {
+//                    VideoCompressor compressor = new VideoCompressor(this, new VideoCompressor.CompressListener() {
+//                        @Override
+//                        public void onStart() {
+//
+//                        }
+//
+//                        @Override
+//                        public void onSuccess(Uri uri) {
+//                            Handler mainHandler = new Handler(Looper.getMainLooper());
+//                            Runnable myRunnable = () -> {
+//                                MediaScannerConnection.scanFile(CompressSingleActivity.this, new String[]{uri.getPath()}, null, null);
+//
+//                                endTime = System.currentTimeMillis();
+//                                String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+//                                tvTime.setText(tvTime.getText() + " - " + currentTime);
+//                                tvTotal.setText("Total (second): " + (endTime - startTime) / 1000);
+//
+//                                String realPath = uri.getPath();
+//
+//                                File realFile = new File(realPath);
+//
+//                                HandleVideo video = new HandleVideo(Uri.fromFile(realFile));
+//
+//                                video.setCompressStartEnd(tvTime.getText().toString());
+//                                video.setCompressTotal(tvTotal.getText().toString());
+//
+//                                int position = findExist(video);
+//
+//                                if (position != -1) {
+//                                    videoFiles.set(position, realFile);
+//                                    mediaFilesList.set(position, video);
+//                                } else {
+//                                    videoFiles.add(realFile);
+//                                    mediaFilesList.add(video);
+//                                }
+//
+//                                playlistDialog.updateList(mediaFilesList);
+//                                repository.insertVideo(video);
+//                                getDataOutput(uri);
+//                            };
+//                            mainHandler.post(myRunnable);
+//                        }
+//
+//                        @Override
+//                        public void onFail() {
+//
+//                        }
+//
+//                        @Override
+//                        public void onProgress(int percent) {
+//                            Handler mainHandler = new Handler(Looper.getMainLooper());
+//                            Runnable myRunnable = () -> {
+//                                pbIsCompressed.setProgress(percent);
+//                                tvPercent.setText(percent + "%");
+//                            };
+//                            mainHandler.post(myRunnable);
+//                        }
+//                    });
+//                    compressor.setInput(new HandleVideo(videoInputUri));
+//                    compressor.isSaveInternal(true);
+//                    compressor.isAudioCompress(false);
+//
+//                    if (codec.equals("H264-Normal"))
+//                        compressor.setProfileH264Normal();
+//                    else if (codec.equals("H264-Medium"))
+//                        compressor.setProfileH264Medium();
+//                    else if (codec.equals("H264-High"))
+//                        compressor.setProfileH264High();
+//                    else if (codec.equals("H265-Normal"))
+//                        compressor.setProfileH265Normal();
+//                    else if (codec.equals("H265-Medium"))
+//                        compressor.setProfileH265Medium();
+//                    else if (codec.equals("H265-High"))
+//                        compressor.setProfileH265High();
+//
+//                    compressor.start();
+//
+//                } catch (Throwable e) {
+//                    Log.e(TAG, "Problem: " + e);
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+//    }
 
     public String getRealPathFromURI(Context context, Uri contentUri) {
         Cursor cursor = null;

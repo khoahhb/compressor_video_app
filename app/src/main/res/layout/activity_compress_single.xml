@@ -15,7 +15,7 @@
         <com.google.android.exoplayer2.ui.PlayerView
             android:id="@+id/playerViewOrigin"
             android:layout_width="match_parent"
-            android:layout_height="250dp"
+            android:layout_height="220dp"
             android:background="#000000"
             app:buffered_color="@color/teal_200"
             app:controller_layout_id="@layout/custom_playback_view_origin"
@@ -38,39 +38,53 @@
             android:gravity="center_horizontal"
             android:orientation="horizontal">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilCodec"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="200dp"
+<!--            <com.google.android.material.textfield.TextInputLayout-->
+<!--                android:id="@+id/tilCodec"-->
+<!--                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"-->
+<!--                android:layout_width="200dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_gravity="center_vertical"-->
+<!--                android:layout_marginEnd="16dp"-->
+<!--                android:hint="Select profile"-->
+<!--                android:orientation="horizontal"-->
+<!--                app:boxCornerRadiusBottomEnd="10dp"-->
+<!--                app:boxCornerRadiusBottomStart="10dp"-->
+<!--                app:boxCornerRadiusTopEnd="10dp"-->
+<!--                app:boxCornerRadiusTopStart="10dp"-->
+<!--                app:boxStrokeWidth="3dp"-->
+<!--                app:errorEnabled="true">-->
+
+<!--                <AutoCompleteTextView-->
+<!--                    android:id="@+id/tieCodec"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="50dp"-->
+<!--                    android:inputType="none"-->
+<!--                    android:textColorHint="#8D6E63"-->
+<!--                    app:simpleItems="@array/simple_items"-->
+<!--                    tools:ignore="LabelFor,VisualLintTextFieldSize,TextContrastCheck" />-->
+
+<!--            </com.google.android.material.textfield.TextInputLayout>-->
+
+            <Button
+                android:id="@+id/btnShowSetting"
+                style="@style/Widget.Material3.Button.ElevatedButton.Icon"
+                android:layout_width="120dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
+                android:layout_gravity="top"
+                android:textSize="16sp"
+                app:icon="@drawable/ic_setting"
                 android:layout_marginEnd="16dp"
-                android:hint="Select profile"
-                android:orientation="horizontal"
-                app:boxCornerRadiusBottomEnd="10dp"
-                app:boxCornerRadiusBottomStart="10dp"
-                app:boxCornerRadiusTopEnd="10dp"
-                app:boxCornerRadiusTopStart="10dp"
-                app:boxStrokeWidth="3dp"
-                app:errorEnabled="true">
-
-                <AutoCompleteTextView
-                    android:id="@+id/tieCodec"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:inputType="none"
-                    android:textColorHint="#8D6E63"
-                    app:simpleItems="@array/simple_items"
-                    tools:ignore="LabelFor,VisualLintTextFieldSize,TextContrastCheck" />
-
-            </com.google.android.material.textfield.TextInputLayout>
+                android:text="Setting" />
 
             <Button
                 android:id="@+id/btnCompress"
-                android:layout_width="120dp"
-                android:layout_height="60dp"
+                style="@style/Widget.Material3.Button.UnelevatedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_gravity="top"
-                android:text="Compress" />
+                android:layout_marginStart="16dp"
+                android:text="Compress"
+                android:textSize="16sp" />
         </LinearLayout>
         <TextView
             android:id="@+id/tvTime"
@@ -108,7 +122,7 @@
             android:visibility="gone"
             android:layout_marginTop="16dp"
             android:layout_width="match_parent"
-            android:layout_height="250dp"
+            android:layout_height="220dp"
             android:background="#000000"
             app:buffered_color="@color/teal_200"
             app:controller_layout_id="@layout/custom_playback_view_compress"
