@@ -233,6 +233,17 @@ public class HandleVideo implements Serializable {
                 .formatFileSize(context, size);
     }
 
+    public float getFloatSize(Context context) {
+        float f = 0;
+
+        String sizet = android.text.format.Formatter
+                .formatFileSize(context, size).split(" ")[0];
+        sizet = sizet.replace(",", ".");
+        f = Float.parseFloat(sizet);
+
+        return f;
+    }
+
     public String getFormatResolution() {
         return width + "x" + height;
     }

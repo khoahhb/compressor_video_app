@@ -33,6 +33,7 @@ public class AllowAccessActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_allow_access);
+        getSupportActionBar().hide();
 
         allow_btn = findViewById(R.id.allow_access);
 

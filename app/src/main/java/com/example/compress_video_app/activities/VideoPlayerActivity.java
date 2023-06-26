@@ -924,7 +924,9 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             zoomContainer.setVisibility(View.GONE);
             super.onScaleEnd(detector);
         }
-    }    View.OnClickListener firstListener = new View.OnClickListener() {
+    }
+
+    View.OnClickListener firstListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
@@ -935,8 +937,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             scaling.setOnClickListener(secondListener);
         }
     };
-
-
 
 
     View.OnClickListener secondListener = new View.OnClickListener() {

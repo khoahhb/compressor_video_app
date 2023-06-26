@@ -38,32 +38,32 @@
             android:gravity="center_horizontal"
             android:orientation="horizontal">
 
-<!--            <com.google.android.material.textfield.TextInputLayout-->
-<!--                android:id="@+id/tilCodec"-->
-<!--                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"-->
-<!--                android:layout_width="200dp"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_gravity="center_vertical"-->
-<!--                android:layout_marginEnd="16dp"-->
-<!--                android:hint="Select profile"-->
-<!--                android:orientation="horizontal"-->
-<!--                app:boxCornerRadiusBottomEnd="10dp"-->
-<!--                app:boxCornerRadiusBottomStart="10dp"-->
-<!--                app:boxCornerRadiusTopEnd="10dp"-->
-<!--                app:boxCornerRadiusTopStart="10dp"-->
-<!--                app:boxStrokeWidth="3dp"-->
-<!--                app:errorEnabled="true">-->
+            <!--            <com.google.android.material.textfield.TextInputLayout-->
+            <!--                android:id="@+id/tilCodec"-->
+            <!--                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"-->
+            <!--                android:layout_width="200dp"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:layout_gravity="center_vertical"-->
+            <!--                android:layout_marginEnd="16dp"-->
+            <!--                android:hint="Select profile"-->
+            <!--                android:orientation="horizontal"-->
+            <!--                app:boxCornerRadiusBottomEnd="10dp"-->
+            <!--                app:boxCornerRadiusBottomStart="10dp"-->
+            <!--                app:boxCornerRadiusTopEnd="10dp"-->
+            <!--                app:boxCornerRadiusTopStart="10dp"-->
+            <!--                app:boxStrokeWidth="3dp"-->
+            <!--                app:errorEnabled="true">-->
 
-<!--                <AutoCompleteTextView-->
-<!--                    android:id="@+id/tieCodec"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="50dp"-->
-<!--                    android:inputType="none"-->
-<!--                    android:textColorHint="#8D6E63"-->
-<!--                    app:simpleItems="@array/simple_items"-->
-<!--                    tools:ignore="LabelFor,VisualLintTextFieldSize,TextContrastCheck" />-->
+            <!--                <AutoCompleteTextView-->
+            <!--                    android:id="@+id/tieCodec"-->
+            <!--                    android:layout_width="match_parent"-->
+            <!--                    android:layout_height="50dp"-->
+            <!--                    android:inputType="none"-->
+            <!--                    android:textColorHint="#8D6E63"-->
+            <!--                    app:simpleItems="@array/simple_items"-->
+            <!--                    tools:ignore="LabelFor,VisualLintTextFieldSize,TextContrastCheck" />-->
 
-<!--            </com.google.android.material.textfield.TextInputLayout>-->
+            <!--            </com.google.android.material.textfield.TextInputLayout>-->
 
             <Button
                 android:id="@+id/btnShowSetting"
@@ -71,10 +71,10 @@
                 android:layout_width="120dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top"
-                android:textSize="16sp"
-                app:icon="@drawable/ic_setting"
                 android:layout_marginEnd="16dp"
-                android:text="Setting" />
+                android:text="Setting"
+                android:textSize="16sp"
+                app:icon="@drawable/ic_setting" />
 
             <Button
                 android:id="@+id/btnCompress"
@@ -86,44 +86,49 @@
                 android:text="Compress"
                 android:textSize="16sp" />
         </LinearLayout>
+
         <TextView
             android:id="@+id/tvTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:paddingLeft="8dp"
             android:textColor="@color/mess"
-            android:textSize="16sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:textSize="16sp" />
+
         <TextView
             android:id="@+id/tvTotal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:paddingLeft="8dp"
             android:textColor="@color/mess"
-            android:textSize="16sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:textSize="16sp" />
+
         <TextView
             android:id="@+id/tvPercent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:text="0%"
             android:textAlignment="center"
             android:textColor="@color/black"
-            android:textStyle="bold"
             android:textSize="18sp"
-            android:visibility="gone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:textStyle="bold"
+            android:visibility="gone" />
+
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/pbIsCompressed"
-            android:layout_marginTop="16dp"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:visibility="gone"
-            app:showAnimationBehavior="outward"/>
+            app:showAnimationBehavior="outward" />
+
         <com.google.android.exoplayer2.ui.PlayerView
             android:id="@+id/playerViewCompress"
-            android:visibility="gone"
-            android:layout_marginTop="16dp"
             android:layout_width="match_parent"
             android:layout_height="220dp"
+            android:layout_marginTop="16dp"
             android:background="#000000"
+            android:visibility="gone"
             app:buffered_color="@color/teal_200"
             app:controller_layout_id="@layout/custom_playback_view_compress"
             app:fastforward_increment="10000"

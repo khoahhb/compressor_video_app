@@ -1,22 +1,230 @@
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="?attr/dialogPreferredPadding"
     android:paddingStart="?attr/dialogPreferredPadding"
+    android:paddingTop="?attr/dialogPreferredPadding"
     android:paddingEnd="?attr/dialogPreferredPadding">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/text_input_layout"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="4dp"
-        android:hint="tile">
+        android:orientation="vertical">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@android:id/text1"
+        <TextView
+            android:id="@+id/tvInfo"
+            style="?attr/textAppearanceLabelLarge"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:text="video.mp4 - 55.3 MB" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                style="?attr/textAppearanceLabelLarge"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:labelFor="@+id/tilCodec"
+                android:text="Codec" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilCodec"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:orientation="horizontal"
+                android:padding="0dp"
+                app:boxStrokeWidth="1dp">
+
+                <AutoCompleteTextView
+                    android:id="@+id/tieCodec"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:inputType="none"
+                    android:padding="0dp"
+                    android:textColorHint="#8D6E63"
+                    app:simpleItems="@array/codec_items" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                style="?attr/textAppearanceLabelLarge"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:labelFor="@+id/tilMethod"
+                android:text="Method" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilMethod"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:orientation="horizontal"
+                android:padding="0dp"
+                app:boxStrokeWidth="1dp">
+
+                <AutoCompleteTextView
+                    android:id="@+id/tieMethod"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:inputType="none"
+                    android:padding="0dp"
+                    android:textColorHint="#8D6E63"
+                    app:simpleItems="@array/method_items" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llPercent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                style="?attr/textAppearanceLabelLarge"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15sp"
+                android:gravity="start"
+                android:labelFor="@+id/sldPercent"
+                android:text="Percent" />
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/sldPercent"
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:stepSize="10"
+                android:valueFrom="10"
+                android:valueTo="90"
+                app:labelBehavior="visible" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                style="?attr/textAppearanceLabelLarge"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:labelFor="@+id/tilProfile"
+                android:text="Profile" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilProfile"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:orientation="horizontal"
+                android:padding="0dp"
+                app:boxStrokeWidth="1dp">
+
+                <AutoCompleteTextView
+                    android:id="@+id/tieProfile"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:inputType="none"
+                    android:padding="0dp"
+                    android:textColorHint="#8D6E63"
+                    app:simpleItems="@array/simple_items" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llQuality"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                style="?attr/textAppearanceLabelLarge"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:labelFor="@+id/tilQuality"
+                android:text="Quality (CRF)" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilQuality"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:orientation="horizontal"
+                android:padding="0dp"
+                app:boxStrokeWidth="1dp">
+
+                <AutoCompleteTextView
+                    android:id="@+id/tieQuality"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:inputType="none"
+                    android:padding="0dp"
+                    android:textColorHint="#8D6E63"
+                    app:simpleItems="@array/quality_items" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llSize"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                style="?attr/textAppearanceLabelLarge"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:labelFor="@+id/tilSize"
+                android:text="Size  (MB)" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilSize"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                app:boxStrokeWidth="1dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/tieSize"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:inputType="numberDecimal"
+                    android:padding="0dp"
+                    android:textColorHint="#8D6E63" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+    </LinearLayout>
 </FrameLayout>

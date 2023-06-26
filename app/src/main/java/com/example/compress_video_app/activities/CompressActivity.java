@@ -648,18 +648,6 @@ public class CompressActivity extends AppCompatActivity {
                     compressor.isSaveInternal(true);
                     compressor.isAudioCompress(false);
 
-                    if (codec.equals("H264-Normal"))
-                        compressor.setProfileH264Normal();
-                    else if (codec.equals("H264-Medium"))
-                        compressor.setProfileH264Medium();
-                    else if (codec.equals("H264-High"))
-                        compressor.setProfileH264High();
-                    else if (codec.equals("H265-Normal"))
-                        compressor.setProfileH265Normal();
-                    else if (codec.equals("H265-Medium"))
-                        compressor.setProfileH265Medium();
-                    else if (codec.equals("H265-High"))
-                        compressor.setProfileH265High();
 
                     compressor.start();
 
