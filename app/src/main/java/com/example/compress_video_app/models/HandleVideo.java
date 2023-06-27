@@ -2,6 +2,8 @@ package com.example.compress_video_app.models;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
@@ -15,16 +17,26 @@ import java.io.FileInputStream;
 import java.io.Serializable;
 
 @Entity(tableName = "videos")
-public class HandleVideo implements Serializable {
+public class HandleVideo implements Serializable, Parcelable {
 
+    public static final Creator<HandleVideo> CREATOR = new Creator<HandleVideo>() {
+        @Override
+        public HandleVideo createFromParcel(Parcel in) {
+            return new HandleVideo(in);
+        }
 
+        @Override
+        public HandleVideo[] newArray(int size) {
+            return new HandleVideo[size];
+        }
+    };
     @Ignore
     private Uri uri;
-
     @PrimaryKey
     @NonNull
     private String name;
     private String path;
+    private String parentPath;
     private String compressStartEnd;
     private String compressTotal;
     @Ignore
@@ -48,6 +60,25 @@ public class HandleVideo implements Serializable {
     @Ignore
     private long endTime = -1;
 
+    protected HandleVideo(Parcel in) {
+        name = in.readString();
+        path = in.readString();
+        uri = Uri.fromFile(new File(path));
+        parentPath = in.readString();
+        compressStartEnd = in.readString();
+        compressTotal = in.readString();
+        mime = in.readString();
+        codec = in.readString();
+        duration = in.readInt();
+        bitrate = in.readInt();
+        frameRate = in.readInt();
+        width = in.readInt();
+        height = in.readInt();
+        size = in.readLong();
+        startTime = in.readLong();
+        endTime = in.readLong();
+    }
+
     public HandleVideo() {
 
     }
@@ -57,6 +88,7 @@ public class HandleVideo implements Serializable {
                        int height, long size, long startTime, long endTime) {
         this.uri = uri;
         this.path = path;
+        this.parentPath = "";
         this.name = name;
         this.compressStartEnd = compressStartEnd;
         this.compressTotal = compressTotal;
@@ -75,6 +107,7 @@ public class HandleVideo implements Serializable {
     public HandleVideo(Uri tUri) {
         this.uri = tUri;
         this.path = uri.getPath();
+        this.parentPath = "";
         this.name = path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
         this.compressStartEnd = "";
         this.compressTotal = "";
@@ -88,6 +121,30 @@ public class HandleVideo implements Serializable {
         this.size = mGetSize();
         this.startTime = -1;
         this.endTime = -1;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(name);
+        dest.writeString(path);
+        dest.writeString(parentPath);
+        dest.writeString(compressStartEnd);
+        dest.writeString(compressTotal);
+        dest.writeString(mime);
+        dest.writeString(codec);
+        dest.writeInt(duration);
+        dest.writeInt(bitrate);
+        dest.writeInt(frameRate);
+        dest.writeInt(width);
+        dest.writeInt(height);
+        dest.writeLong(size);
+        dest.writeLong(startTime);
+        dest.writeLong(endTime);
     }
 
     public Uri getUri() {
@@ -104,6 +161,14 @@ public class HandleVideo implements Serializable {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public String getParentPath() {
+        return parentPath;
+    }
+
+    public void setParentPath(String parentPath) {
+        this.parentPath = parentPath;
     }
 
     public String getName() {
@@ -266,6 +331,7 @@ public class HandleVideo implements Serializable {
         return "HandleVideo{" +
                 "uri=" + uri +
                 ", path='" + path + '\'' +
+                ", parentPath='" + parentPath + '\'' +
                 ", name='" + name + '\'' +
                 ", compressStartEnd='" + compressStartEnd + '\'' +
                 ", compressTotal='" + compressTotal + '\'' +

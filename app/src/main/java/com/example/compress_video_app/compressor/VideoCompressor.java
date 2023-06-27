@@ -98,11 +98,11 @@ public class VideoCompressor {
     }
 
     public void setCodecH265() {
-        mMime = MediaHelper.MIME_TYPE_AVC;
+        mMime = MediaHelper.MIME_TYPE_HEVC;
     }
 
     public void setPercent(int percent) throws IOException {
-        mBitRate = mInput.getBitrate() * percent / 115;
+        mBitRate = mInput.getBitrate() * percent / 105;
         mIFrameInterval = 10;
         String prefix = (mMime == MediaHelper.MIME_TYPE_AVC) ? percent + "-percent-264-" : percent + "-percent-265-";
         setOutput(prefix);
@@ -298,6 +298,7 @@ public class VideoCompressor {
             mVideoEncoder = MediaCodec.createEncoderByType(mMime);
 
             mVideoEncoder.configure(outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+            Log.d("MetMoi", "Video format: " + outputFormat);
 
             mInputSurface = new InputSurface(mVideoEncoder.createInputSurface());
             mInputSurface.makeCurrent();
@@ -446,6 +447,8 @@ public class VideoCompressor {
                 } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
 
                     MediaFormat newFormat = mVideoEncoder.getOutputFormat();
+                    Log.d("MetMoi", "Video format change: " + newFormat);
+
                     mVideoTrackIndex = mVideoMuxer.addTrack(newFormat);
                     mVideoMuxer.setOrientationHint(mRotation);
                     mVideoMuxer.start();
@@ -737,6 +740,9 @@ public class VideoCompressor {
 
             MediaFormat videoFormat = videoExtractor.getTrackFormat(trackIndexVideo);
 
+            Log.d("MetMoi", "Video format mux: " + videoFormat);
+
+
             //Audio Extractor
             MediaExtractor audioExtractor = setupExtractorByUri(mOutputTempAudioUri);
 
@@ -878,8 +884,6 @@ public class VideoCompressor {
     }
 
     public interface CompressListener {
-        void onStart();
-
         void onSuccess(Uri uri);
 
         void onFail();

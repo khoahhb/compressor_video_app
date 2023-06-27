@@ -14,7 +14,6 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -285,74 +284,6 @@ public class VideoFilesAdapter extends RecyclerView.Adapter<VideoFilesAdapter.Vi
         videoList = new ArrayList<>();
         videoList.addAll(files);
         notifyDataSetChanged();
-    }
-
-    private void compressVideo(String inputPath) {
-
-        File inputFile = new File(inputPath);
-
-        try {
-//            VideoCompressor compressor = new VideoCompressor(context, new VideoCompressor.CompressListener() {
-//                @Override
-//                public void onStart() {
-//
-//                }
-//
-//                @Override
-//                public void onSuccess(Uri uri) {
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                        NotificationChannel channel1 = new NotificationChannel(
-//                                "channel1",
-//                                "Channel 1",
-//                                NotificationManager.IMPORTANCE_HIGH
-//                        );
-//                        channel1.setDescription("This is Channel 1");
-//
-//
-//                        NotificationManager manager = context.getSystemService(NotificationManager.class);
-//                        manager.createNotificationChannel(channel1);
-//                        NotificationCompat.Builder notification = new NotificationCompat.Builder(context, "channel1")
-//                                .setSmallIcon(R.drawable.ic_compress)
-//                                .setContentTitle("Compress Success")
-//                                .setContentText("Compress success, refresh the page")
-//                                .setPriority(NotificationCompat.PRIORITY_LOW)
-//                                .setOnlyAlertOnce(true);
-//
-//                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-//                        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-//                            // TODO: Consider calling
-//                            //    ActivityCompat#requestPermissions
-//                            // here to request the missing permissions, and then overriding
-//                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//                            //                                          int[] grantResults)
-//                            // to handle the case where the user grants the permission. See the documentation
-//                            // for ActivityCompat#requestPermissions for more details.
-//                            return;
-//                        } else {
-//
-//                        }
-//                        notificationManager.notify(2, notification.build());
-//                    }
-//                }
-//
-//                @Override
-//                public void onFail() {
-//
-//                }
-//
-//                @Override
-//                public void onProgress(float percent) {
-//
-//                }
-//            });
-//            compressor.setInput(new HandleVideo(Uri.fromFile(inputFile)));
-//            compressor.setProfileH264High();
-//            compressor.start();
-
-        } catch (Throwable e) {
-            Log.e(TAG, "Problem: " + e);
-            e.printStackTrace();
-        }
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

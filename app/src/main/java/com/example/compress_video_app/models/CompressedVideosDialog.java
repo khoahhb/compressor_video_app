@@ -54,9 +54,9 @@ public class CompressedVideosDialog extends BottomSheetDialogFragment {
 
         folder.setText("Compressed videos");
 
-        videoFilesAdapter = new CompressedVideosAdapter(arrayList, getContext(), new CompressedVideosAdapter.CompressedVideoListener() {
+        videoFilesAdapter = new CompressedVideosAdapter(arrayList, getContext(), 1, new CompressedVideosAdapter.CompressedVideoListener() {
             @Override
-            public void onClickHandle(Uri uri) {
+            public void onClickHandle(Uri uri, int position) {
                 fileListener.onClickHandle(uri);
                 bottomSheetDialog.dismiss();
             }

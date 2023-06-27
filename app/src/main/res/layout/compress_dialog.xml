@@ -114,7 +114,7 @@
                 android:layout_weight="1"
                 android:stepSize="10"
                 android:valueFrom="10"
-                android:valueTo="90"
+                android:valueTo="70"
                 app:labelBehavior="visible" />
         </LinearLayout>
 

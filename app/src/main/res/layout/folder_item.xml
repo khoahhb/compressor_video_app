@@ -43,14 +43,6 @@
                 android:maxLines="2"
                 android:text="Folder Path"
                 android:textColor="@color/light_dark" />
-
-            <TextView
-                android:id="@+id/noOfFiles"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="5 Videos"
-                android:textColor="@color/light_dark"
-                android:textSize="17sp" />
         </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

@@ -17,6 +17,7 @@ import com.bumptech.glide.Glide;
 import com.example.compress_video_app.R;
 import com.example.compress_video_app.models.HandleVideo;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -24,14 +25,19 @@ import java.util.ArrayList;
 public class CompressedVideosAdapter extends RecyclerView.Adapter<CompressedVideosAdapter.ViewHolder> {
 
     private static final String TAG = "VideoFilesAdapter2";
+    private static final int SINGLE_LIST = 1;
+    private static final int ALL_LIST = 2;
+
     private final Context context;
     private final CompressedVideoListener compressedVideoListener;
+    private final int viewType;
     BottomSheetDialog bottomSheetDialog;
     private ArrayList<HandleVideo> videoList;
 
-    public CompressedVideosAdapter(ArrayList<HandleVideo> videoList, Context context, CompressedVideoListener compressedVideoListener) {
+    public CompressedVideosAdapter(ArrayList<HandleVideo> videoList, Context context, int viewType, CompressedVideoListener compressedVideoListener) {
         this.videoList = videoList;
         this.context = context;
+        this.viewType = viewType;
         this.compressedVideoListener = compressedVideoListener;
     }
 
@@ -51,15 +57,26 @@ public class CompressedVideosAdapter extends RecyclerView.Adapter<CompressedVide
 
         Glide.with(context).load(new File(videoList.get(position).getUri().getPath()))
                 .into(holder.thumbnail);
-
-        holder.menu_more.setVisibility(View.GONE);
-        holder.videoName.setTextColor(Color.WHITE);
-        holder.videoSize.setTextColor(Color.WHITE);
+        if (viewType == SINGLE_LIST) {
+            holder.menu_more.setVisibility(View.GONE);
+            holder.videoName.setTextColor(Color.WHITE);
+            holder.videoSize.setTextColor(Color.WHITE);
+        } else {
+            holder.menu_more.setVisibility(View.VISIBLE);
+            holder.menu_more.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showInfoDialog(videoList.get(position));
+                }
+            });
+            holder.videoName.setTextColor(Color.BLACK);
+            holder.videoSize.setTextColor(Color.BLACK);
+        }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                compressedVideoListener.onClickHandle(videoList.get(position).getUri());
+                compressedVideoListener.onClickHandle(videoList.get(position).getUri(), position);
             }
         });
     }
@@ -75,8 +92,33 @@ public class CompressedVideosAdapter extends RecyclerView.Adapter<CompressedVide
         notifyDataSetChanged();
     }
 
+    private void showInfoDialog(HandleVideo video) {
+
+        String one = "File: " + video.getName();
+
+        String two = "Size: " + video.getFormatSize(context);
+
+        String three = "Resolution: " + video.getFormatResolution();
+
+        String four = "Duration: " + video.getFormatDuration();
+
+        String five = "Format: " + video.getMime();
+
+        String six = "Codec: " + video.getCodec();
+        String seven = "Bitrate: " + video.getFormatBitrate();
+        String eight = "Frame rate: " + video.getFormatFrameRate();
+
+        new MaterialAlertDialogBuilder(context,
+                R.style.ThemeOverlay_Catalog_MaterialAlertDialog_Centered_FullWidthButtons)
+                .setTitle("Properties")
+                .setMessage(one + "\n\n" + two + "\n\n" + three + "\n\n" + four +
+                        "\n\n" + five + "\n\n" + six + "\n\n" + seven + "\n\n" + eight)
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
     public interface CompressedVideoListener {
-        void onClickHandle(Uri uri);
+        void onClickHandle(Uri uri, int position);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
